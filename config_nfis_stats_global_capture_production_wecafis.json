@@ -1,0 +1,114 @@
+{
+  "mode": "entity",
+  "profile": {
+    "id": "fao-stats-capture-workflow-wecafis",
+    "name": "geoflow-fao-stats-capture-wecafis",
+  	"project": "geoflow-fao-stats-capture-wecafis",
+  	"organization": "UN-FAO",
+  	"logos": [
+  		"https://www.fao.org/figis/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
+  	],
+  	"mode": "entity",
+	"environment": {
+  		"file": "envs/wecafis.env",
+  		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+  	}
+  },
+  "metadata": {
+    "entities": [{
+      "handler": "gsheet",
+      "source": "{{GEOFLOW_ENTITIES}}"
+    }],
+    "contacts" : [{
+      "handler": "gsheet",
+      "source": "{{GEOFLOW_CONTACTS}}"
+    }],
+	"dictionary" : [{
+      "handler": "gsheet",
+      "source": "{{GEOFLOW_DICTIONARY}}"
+    }]			
+  },
+  "software": [
+	{
+		"id": "wecafis-db-write",
+		"type": "output",
+		"software_type": "dbi",
+		"parameters": {
+			"drv": "{{DB_DRV}}",
+			"user": "{{DB_USER}}",
+			"password": "{{DB_PASSWORD}}",
+			"host": "{{DB_HOST}}",
+			"port": "{{DB_PORT}}",
+			"dbname": "{{DB_NAME}}"
+		}
+	},
+	{
+		"id": "wecafis-db-read",
+		"type": "input",
+		"software_type": "dbi",
+		"parameters": {
+			"drv": "{{DB_DRV}}",
+			"user": "{{DB_USER}}",
+			"password": "{{DB_PASSWORD}}",
+			"host": "{{DB_HOST}}",
+			"port": "{{DB_PORT}}",
+			"dbname": "{{DB_NAME}}"
+		}
+	},
+	{
+		"id": "wecafis-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "INFO"
+		}
+	},
+	{
+		"id": "wecafis-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "INFO"
+		},
+		"properties" : {
+			"workspace": "{{GEOSERVER_WORKSPACE}}",
+			"store": "{{GEOSERVER_STORE}}"
+		}
+	}
+  ],
+  "actions": [
+	{
+      "id": "geometa-create-iso-19115",
+	  "options": {
+		"logo": true
+	  },
+	  "run":true
+    },
+	{
+	  "id": "geometa-create-iso-19110",
+	  "run":true,
+	    "options" : {
+		"extra_attributes"  : ["aggregation_method"],
+		"exclude_values_for_attributes": ["measurement", "measurement_type","measurement_unit","measurement_status"]
+      }
+	},
+	{
+	  "id": "geonapi-publish-iso-19139",
+	  "run":true
+	},
+	{
+	  "id": "geosapi-publish-ogc-services",
+	  "run":true,
+	  "options": {
+		"enrich_with_relation_wms_thumbnail": false
+	  }
+	}
+  ]
+}
