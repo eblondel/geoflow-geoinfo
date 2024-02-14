@@ -17,7 +17,7 @@
   "metadata": {
     "entities": [{
       "handler": "gsheet",
-      "source": "{{GEOFLOW_ENTITIES}}"
+      "source": "https://docs.google.com/spreadsheets/d/12baRVRmtQCIf9aH6UsAlD8svEJ1Syf5JpeD4nst7MwY/edit?usp=sharing"
     }],
     "contacts" : [{
       "handler": "gsheet",
