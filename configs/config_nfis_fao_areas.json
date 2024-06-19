@@ -1,0 +1,72 @@
+{
+	"profile": {
+		"id": "fsa-workflow",
+		"mode": "raw",
+		"environment": {
+			"file": "envs/geoinfo.env",
+			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+		}
+	},
+	"software": [
+	{
+		"id": "fifao_wfs",
+		"type": "input",
+		"software_type": "wfs",
+		"parameters": {
+			"url": "https://www.fao.org/fishery/geoserver/fifao/wfs",
+			"serviceVersion": "1.0.0",
+			"logger": "DEBUG"
+		}
+	},
+	{
+		"id": "fi-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "DEBUG"
+		}
+	},
+	{
+		"id": "fi-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "DEBUG"
+		},
+		"properties": {
+			"workspace": "fifao",
+			"datastore": "fifao_shapefiles"
+		}
+		
+	}
+	],
+	"actions": [
+	{
+		"id": "process-master-fishing-areas",
+		"script": "actions/fsa/process_master_fishing_areas.R",
+		"run": true
+	},
+	{
+		"id": "process-manage-fishing-areas",
+		"script": "actions/fsa/process_manage_fishing_areas.R", 
+		"run": true
+	},
+	{
+		"id": "process-upload-fishing-areas",
+		"script": "actions/fsa/process_upload_fishing_areas.R",
+		"run": true
+	},
+	{
+		"id": "process-publish-fishing-areas",
+		"script": "actions/fsa/process_publish_fishing_areas.R",
+		"run": true
+	}
+	]
+}

@@ -1,0 +1,277 @@
+#
+# Scripts to manage the fishing areas GIS dataset
+# This includes the production of:
+# - normalized dataset FAO_AREAS (not erased)
+# - normalized dataset FAO_AREAS_SINGLEPART (with Polygon features instead of MultiPolygon)
+# - normalized dataset and erased by continent FAO_AREAS_ERASE
+# 
+# The derivate products handle the status of eac area, whether it is
+# officially endorsed by CWP, or still at draft stage
+#
+# @author eblondel
+# @date 2015/10/27
+#
+config$logger.info("============================================================================================")
+config$logger.info("MANAGE FAO areas datasets...")
+config$logger.info("============================================================================================")
+
+#packages
+#--------------------------------------------------------------------------------------------
+require(sf)
+require(terra)
+require(magrittr)
+
+#options
+#--------------------------------------------------------------------------------------------
+Sys.setlocale("LC_ALL", "en_US.UTF-8")
+options(encoding="UTF-8")
+options(stringsAsFactors = FALSE)
+
+#functions
+#--------------------------------------------------------------------------------------------
+
+#get fishery statistical area levels
+getFisheryStatAreas <- function(){
+	fisheryStatAreas <- data.frame(
+		propertyName = c("F_AREA", "F_SUBAREA", "F_DIVISION", "F_SUBDIVIS", "F_SUBUNIT"),
+		levelName = c("MAJOR", "SUBAREA", "DIVISION", "SUBDIVISION", "SUBUNIT"),
+		stringsAsFactors = FALSE
+	)
+	return(fisheryStatAreas)
+}
+
+#dissolve feature
+dissolveFeature <- function(area, features){
+	
+	#proceed to the build
+	areaCode = NULL
+	subarea = NULL
+	div = NULL
+	subdiv = NULL
+	
+	#process the geometry
+	out.sp <- sf::st_make_valid(sf::st_union(features))
+	
+	#area status (officially endorsed vs. draft)
+	areaStatus <- 1
+	areaCode <- unique(features[[area$propertyName]])
+	if(!is.na(areaCode)){
+		if(class(areaCode) == "factor") areaCode <- as.character(areaCode)
+		if(substr(areaCode,1,1) == "_"){
+			areaStatus <- 0
+			areaCode <- substr(areaCode,2,nchar(areaCode))
+		}		
+	}
+	
+	#handle attributes
+	out.df <- switch(area$levelName,
+		"MAJOR" = data.frame(
+			"F_LEVEL" = "MAJOR",
+			"F_CODE" = areaCode,
+			"F_STATUS" = areaStatus,
+			"OCEAN" = unique(features[["OCEAN"]]),
+			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
+			"F_AREA" = areaCode,
+			"F_SUBAREA" = NA,
+			"F_DIVISION" = NA,
+			"F_SUBDIVIS" = NA,
+			"F_SUBUNIT" = NA,
+			stringsAsFactors = FALSE
+		),
+		"SUBAREA" = data.frame(
+			"F_LEVEL" = "SUBAREA",
+			"F_CODE" = areaCode,
+			"F_STATUS" = areaStatus,
+			"OCEAN" = unique(features[["OCEAN"]]),
+			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
+			"F_AREA" = unique(features[["F_AREA"]]),
+			"F_SUBAREA" = areaCode,
+			"F_DIVISION" = NA,
+			"F_SUBDIVIS" = NA,
+			"F_SUBUNIT" = NA,
+			stringsAsFactors = FALSE
+		),
+		"DIVISION" = data.frame(
+			"F_LEVEL" = "DIVISION",
+			"F_CODE" = areaCode,
+			"F_STATUS" = areaStatus,
+			"OCEAN" = unique(features[["OCEAN"]]),
+			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
+			"F_AREA" = unique(features[["F_AREA"]]),
+			"F_SUBAREA" = unique(features[["F_SUBAREA"]]),
+			"F_DIVISION" = areaCode,
+			"F_SUBDIVIS" = NA,
+			"F_SUBUNIT" = NA,
+			stringsAsFactors = FALSE
+		),
+		"SUBDIVISION" = data.frame(
+			"F_LEVEL" = "SUBDIVISION",
+			"F_CODE" = areaCode,
+			"F_STATUS" = areaStatus,
+			"OCEAN" = unique(features[["OCEAN"]]),
+			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
+			"F_AREA" = unique(features[["F_AREA"]]),
+			"F_SUBAREA" = unique(features[["F_SUBAREA"]]),
+			"F_DIVISION" = unique(features[["F_DIVISION"]]),
+			"F_SUBDIVIS" = areaCode,
+			"F_SUBUNIT" = NA,
+			stringsAsFactors = FALSE
+		),
+		"SUBUNIT" = data.frame(
+			"F_LEVEL" = "SUBUNIT",
+			"F_CODE" = areaCode,
+			"F_STATUS" = areaStatus,
+			"OCEAN" = unique(features[["OCEAN"]]),
+			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
+			"F_AREA" = unique(features[["F_AREA"]]),
+			"F_SUBAREA" = unique(features[["F_SUBAREA"]]),
+			"F_DIVISION" = unique(features[["F_DIVISION"]]),
+			"F_SUBDIVIS" = unique(features[["F_SUBDIVIS"]]),
+			"F_SUBUNIT" = areaCode,
+			stringsAsFactors = FALSE
+		)
+	)
+	row.names(out.df) <- as.character(areaCode)
+	
+	out = NULL
+	if(!is.null(out.sp)){
+		out <- sf::st_sf(out.sp, out.df)		
+	}
+	
+	return(out)
+}
+
+
+#area-based function to create new (dissolved) area
+dissolveByFisheryArea <- function(area, features){
+
+	#get unique list of codes
+	areaCodes <- unique(features[[area$propertyName]])
+	areaCodes <- areaCodes[!is.na(areaCodes)]
+	
+	#sub-collection
+	sp.list <- lapply(areaCodes,
+					  function(x){
+						subcol <- features[!is.na(features[[area$propertyName]]) &
+										   features[[area$propertyName]] == x,]
+						out <- dissolveFeature(area, subcol)
+						return(out)
+					  })
+	sp.list <- sp.list[!sapply(sp.list, is.null)]
+	out.sp <- do.call("rbind",sp.list)
+}
+
+#main function to manage fishery stat areas
+manageFisheryStatAreas <- function(features){
+
+	areas <- getFisheryStatAreas()
+	sp.list <- lapply(1:nrow(areas),
+								function(x){
+									area <- areas[x,]
+									out <- dissolveByFisheryArea(area, features)
+									return(out)
+								})
+	sp.list <- sp.list[!sapply(sp.list, is.null)]
+	out.sp <- do.call("rbind", sp.list)
+	return(out.sp)
+}
+
+#main function to add fishery stat area names
+addFisheryStatAreaNames <- function(features, codelists){
+	fsa.labels <- do.call("rbind", lapply(codelists, function(codelist){
+		config$logger.info(sprintf("Current working directory: %s",getwd()))
+		fsa.lab <- read.table(file.path(config$wd, "data/fsa", codelist), sep=",", h=TRUE)
+		fields <- c("Code", "Name_En", "Name_Fr", "Name_Es")
+		fsa.lab <- fsa.lab[,fields]
+		colnames(fsa.lab) <- toupper(fields)
+		return(fsa.lab)
+	}))
+	config$logger.info(sprintf("Successfuly read %s codelist tables", length(fsa.labels)))
+	features$ID <- 1:nrow(features)
+	featData <- merge(features, fsa.labels, by.x = "F_CODE", by.y = "CODE", all.x = TRUE, all.y = FALSE)
+	featData <- featData[order(featData$ID),]
+	features <- featData
+	return(features)
+}
+
+#main function to erase fishery stat areas
+eraseFisheryStatAreas <- function(features, eraser, computeSurfaces = TRUE){
+  features = sf::st_make_valid(features)
+  eraser = sf::st_make_valid(eraser)
+	out <- sf::st_difference(features, eraser)
+	if(computeSurfaces){
+		out$SURFACE = as(sf::st_area(sf::st_transform(out, "+proj=eck4")), "numeric")
+	}
+	out$ID.1 = NULL
+	out$ID = NULL
+	out$gml_id = NULL
+	return(out)
+}
+
+#business logic
+#----------------------------------------------------------------------------------
+
+#connect to WFS
+WFS <- config$software$input$wfs
+
+#read master data from the published source
+data.sf <- WFS$getFeatures("fifao:FAO_AREAS_MASTER")
+if(!is.null(data.sf)) config$logger.info("Successful fetching of master file through WFS")
+
+# data <- as(data.sf, "Spatial")
+# 
+# #crop at North pole (-89.99 instead of -90) to avoid reprojection issues when exploiting the data
+# config$logger.info("Crop data to fit global WGS84 extent")
+# data <- raster::crop(data, raster::extent(-180,180,-89.99, 89.99))
+
+#compute and export 'FAO_AREAS'
+config$logger.info("Process master file (normalization)")
+result <- manageFisheryStatAreas(data.sf)
+
+
+#inherit FAO area labels
+config$logger.info("Inherit FAO area multi-lingual labels")
+codelists <- c("CL_FI_WATERAREA_MAJOR.csv", "CL_FI_WATERAREA_SUBAREA.csv", "CL_FI_WATERAREA_DIVISION.csv", "CL_FI_WATERAREA_SUBDIVISION.csv", "CL_FI_WATERAREA_SUBUNIT.csv")
+jobDirPath <- getwd()
+setwd(config$wd)
+result <- addFisheryStatAreaNames(result, codelists)
+setwd(jobDirPath)
+config$logger.info(getwd())
+config$logger.info(class(result))
+sf::st_crs(result) = 4326
+sf::st_write(result, "FAO_AREAS.shp")
+zip::zip("FAO_AREAS.zip", files = list.files(getwd(), "FAO_AREAS\\."))
+
+#compute and export 'FAO_AREAS_ERASE'
+config$logger.info("Compute/Export FAO areas layer erased by land")
+continent.high <- WFS$getFeatures("fifao:UN_CONTINENT2_new")
+sf::st_crs(continent.high) = 4326
+result_erased_hr <- eraseFisheryStatAreas(result, continent.high)
+sf::st_write(result_erased_hr, "FAO_AREAS_ERASE.shp")
+zip::zip("FAO_AREAS_ERASE.zip", files = list.files(".", "FAO_AREAS_ERASE\\.", full.names = T))
+
+continent.low <- WFS$getFeatures("fifao:UN_CONTINENT2")
+sf::st_crs(continent.low) = 4326
+result_erased_lr <- eraseFisheryStatAreas(result, continent.low)
+sf::st_write(result_erased_lr, "FAO_AREAS_ERASE_LOWRES.shp")
+zip::zip("FAO_AREAS_ERASE_LOWRES.zip", files = list.files(getwd(), "FAO_AREAS_ERASE_LOWRES\\."))
+
+#compute and export 'FAO_AREAS_SINGLEPART' ('FAO_AREAS' with Polygons instead of MultiPolygons)
+config$logger.info("Compute/Export single part feature collections")
+result_singlepart <- terra::vect(result) %>% terra::disagg() %>% sf::st_as_sf()
+sf::st_write(result_singlepart, "FAO_AREAS_SINGLEPART.shp")
+zip::zip("FAO_AREAS_SINGLEPART.zip", files = list.files(getwd(), "FAO_AREAS_SINGLEPART\\."))
+
+#compute and export 'FAO_AREAS_ERASE_SINGLEPART' ('FAO_AREAS_ERASE' with Polygons instead of MultiPolygons)
+config$logger.info("Compute/Export single part feature collections")
+result_erased_hr_singlepart <- terra::vect(result_erased_hr) %>% terra::disagg() %>% sf::st_as_sf()
+sf::st_write(result_erased_hr_singlepart, "FAO_AREAS_ERASE_SINGLEPART.shp")
+zip::zip("FAO_AREAS_ERASE_SINGLEPART.zip", files = list.files(getwd(), "FAO_AREAS_ERASE_SINGLEPART\\."))
+result_erased_lr_singlepart <- terra::vect(result_erased_lr) %>% terra::disagg() %>% sf::st_as_sf()
+sf::st_write(result_erased_lr_singlepart, "FAO_AREAS_ERASE_SINGLEPART_LOWRES.shp")
+zip::zip("FAO_AREAS_ERASE_SINGLEPART_LOWRES.zip", files = list.files(getwd(), "FAO_AREAS_ERASE_SINGLEPART_LOWRES\\."))
+
+#surfaces table
+config$logger.info("Export FAO areas surface calculations")
+readr::write_csv(as.data.frame(result_erased_hr)[,c("F_CODE", "SURFACE")],"fsa_surfaces.csv")
+
