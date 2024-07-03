@@ -52,26 +52,30 @@ dissolveFeature <- function(area, features){
 	#process the geometry
 	out.sp <- sf::st_make_valid(sf::st_union(features))
 	
-	#area status (officially endorsed vs. draft)
-	areaStatus <- 1
-	areaCode <- unique(features[[area$propertyName]])
-	if(!is.na(areaCode)){
-		if(class(areaCode) == "factor") areaCode <- as.character(areaCode)
-		if(substr(areaCode,1,1) == "_"){
-			areaStatus <- 0
-			areaCode <- substr(areaCode,2,nchar(areaCode))
-		}		
+	getCode = function(code){
+	  if(is(code, "factor")) code = as.character(code)
+	  if(length(code)>1) code = unique(code)[1]
+	  if(startsWith(code, "_")) substr(code, 2, nchar(code)) else code
 	}
+	getStatus = function(code){
+	  if(is(code, "factor")) code = as.character(code)
+	  if(length(code)>1) code = unique(code)
+	  if(startsWith(code, "_")) 0 else 1
+	}
+	
+	print(getCode(features[[area$propertyName]]))
+	print(getStatus(features[[area$propertyName]]))
 	
 	#handle attributes
 	out.df <- switch(area$levelName,
 		"MAJOR" = data.frame(
 			"F_LEVEL" = "MAJOR",
-			"F_CODE" = areaCode,
-			"F_STATUS" = areaStatus,
+			"F_CODE" = getCode(features[[area$propertyName]]),
+			"F_STATUS" = getStatus(features[[area$propertyName]]),
+			"F_NAME" = unique(features[["AREA_N"]])[1],
 			"OCEAN" = unique(features[["OCEAN"]]),
 			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
-			"F_AREA" = areaCode,
+			"F_AREA" = getCode(features[[area$propertyName]]),
 			"F_SUBAREA" = NA,
 			"F_DIVISION" = NA,
 			"F_SUBDIVIS" = NA,
@@ -80,12 +84,13 @@ dissolveFeature <- function(area, features){
 		),
 		"SUBAREA" = data.frame(
 			"F_LEVEL" = "SUBAREA",
-			"F_CODE" = areaCode,
-			"F_STATUS" = areaStatus,
+			"F_CODE" = getCode(features[[area$propertyName]]),
+			"F_STATUS" = getStatus(features[[area$propertyName]]),
+			"F_NAME" = unique(features[["SUBAREA_N"]])[1],
 			"OCEAN" = unique(features[["OCEAN"]]),
 			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
 			"F_AREA" = unique(features[["F_AREA"]]),
-			"F_SUBAREA" = areaCode,
+			"F_SUBAREA" = getCode(features[[area$propertyName]]),
 			"F_DIVISION" = NA,
 			"F_SUBDIVIS" = NA,
 			"F_SUBUNIT" = NA,
@@ -93,45 +98,48 @@ dissolveFeature <- function(area, features){
 		),
 		"DIVISION" = data.frame(
 			"F_LEVEL" = "DIVISION",
-			"F_CODE" = areaCode,
-			"F_STATUS" = areaStatus,
+			"F_CODE" = getCode(features[[area$propertyName]]),
+			"F_STATUS" = getStatus(features[[area$propertyName]]),
+			"F_NAME" = unique(features[["DIVISION_N"]])[1],
 			"OCEAN" = unique(features[["OCEAN"]]),
 			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
 			"F_AREA" = unique(features[["F_AREA"]]),
-			"F_SUBAREA" = unique(features[["F_SUBAREA"]]),
-			"F_DIVISION" = areaCode,
+			"F_SUBAREA" = getCode(features[["F_SUBAREA"]]),
+			"F_DIVISION" = getCode(features[[area$propertyName]]),
 			"F_SUBDIVIS" = NA,
 			"F_SUBUNIT" = NA,
 			stringsAsFactors = FALSE
 		),
 		"SUBDIVISION" = data.frame(
 			"F_LEVEL" = "SUBDIVISION",
-			"F_CODE" = areaCode,
-			"F_STATUS" = areaStatus,
+			"F_CODE" = getCode(features[[area$propertyName]]),
+			"F_STATUS" = getStatus(features[[area$propertyName]]),
+			"F_NAME" = unique(features[["SUBDIVIS_N"]])[1],
 			"OCEAN" = unique(features[["OCEAN"]]),
 			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
 			"F_AREA" = unique(features[["F_AREA"]]),
-			"F_SUBAREA" = unique(features[["F_SUBAREA"]]),
-			"F_DIVISION" = unique(features[["F_DIVISION"]]),
-			"F_SUBDIVIS" = areaCode,
+			"F_SUBAREA" = getCode(features[["F_SUBAREA"]]),
+			"F_DIVISION" = getCode(features[["F_DIVISION"]]),
+			"F_SUBDIVIS" = getCode(features[[area$propertyName]]),
 			"F_SUBUNIT" = NA,
 			stringsAsFactors = FALSE
 		),
 		"SUBUNIT" = data.frame(
 			"F_LEVEL" = "SUBUNIT",
-			"F_CODE" = areaCode,
-			"F_STATUS" = areaStatus,
+			"F_CODE" = getCode(features[[area$propertyName]]),
+			"F_STATUS" = getStatus(features[[area$propertyName]]),
+			"F_NAME" = unique(features[["SUBUNIT_N"]])[1],
 			"OCEAN" = unique(features[["OCEAN"]]),
 			"SUBOCEAN" = unique(features[["SUBOCEAN"]]),
 			"F_AREA" = unique(features[["F_AREA"]]),
-			"F_SUBAREA" = unique(features[["F_SUBAREA"]]),
-			"F_DIVISION" = unique(features[["F_DIVISION"]]),
-			"F_SUBDIVIS" = unique(features[["F_SUBDIVIS"]]),
-			"F_SUBUNIT" = areaCode,
+			"F_SUBAREA" = getCode(features[["F_SUBAREA"]]),
+			"F_DIVISION" = getCode(features[["F_DIVISION"]]),
+			"F_SUBDIVIS" = getCode(features[["F_SUBDIVIS"]]),
+			"F_SUBUNIT" = getCode(features[[area$propertyName]]),
 			stringsAsFactors = FALSE
 		)
 	)
-	row.names(out.df) <- as.character(areaCode)
+	row.names(out.df) <- getCode(features[[area$propertyName]])
 	
 	out = NULL
 	if(!is.null(out.sp)){
@@ -228,6 +236,78 @@ if(!is.null(data.sf)) config$logger.info("Successful fetching of master file thr
 config$logger.info("Process master file (normalization)")
 result <- manageFisheryStatAreas(data.sf)
 
+fao_area_31 = result[result$F_AREA == 31,]
+
+
+getParent = function(data){
+  sapply(1:nrow(data), function(x){
+    rec = data[x,]
+    parent = switch(rec$F_LEVEL,
+     "MAJOR" = NA,
+     "SUBAREA" = rec$F_AREA,
+     "DIVISION" = rec$F_SUBAREA,
+     "SUBDIVISION" = rec$F_DIVISION,
+     "SUBUNIT" = rec$F_SUBUNIT
+    )
+    return(parent)
+  })
+}
+
+getLevel = function(data){
+  sapply(1:nrow(data), function(x){
+    rec = data[x,]
+    lev = switch(rec$F_LEVEL,
+      "MAJOR" = "area",
+      "SUBAREA" = "subarea",
+      "DIVISION" = "division",
+      "SUBDIVISION" = "subdivision",
+      "SUBUNIT" = "subunit"
+    )
+    return(lev)
+  })
+}
+
+getFigisID = function(data){
+  sapply(1:nrow(data), function(x){
+    rec = data[x,]
+    id = switch(rec$F_LEVEL,
+                 "MAJOR" = paste0("fao_major:", rec$F_CODE),
+                 "SUBAREA" = paste0("fao_sub_area:", rec$F_CODE),
+                 "DIVISION" = paste0("fao_div:", rec$F_CODE),
+                 "SUBDIVISION" = paste0("fao_sub_div:", rec$F_CODE),
+                 "SUBUNIT" = paste0("fao_sub_unit:", rec$F_CODE)
+    )
+    return(id)
+  })
+}
+
+area_31 = tibble::tibble(
+  ID = paste0("fao:",fao_area_31$F_CODE),
+  ID_old = fao_area_31$F_CODE,
+  Code = fao_area_31$F_CODE,
+  Parent_id_old = getParent(fao_area_31),
+  Parent_id = paste0("fao:",getParent(fao_area_31)),
+  Type = getLevel(fao_area_31),
+  Name = fao_area_31$F_NAME,
+  FigisID = getFigisID(fao_area_31),
+  Codesystem = "fao",
+  Description = "",
+  TableOptions = "",
+  Table = "",
+  Images = "",
+  Keywords = "",
+  "Source Of information and URL" = "",
+  "Additional reading" = "",
+  "Environment" = "Marine areas",
+  "Language" = "en",
+  "CoverPage" = 640,
+  CreationDate = Sys.Date(),
+  ModifiedDate = Sys.Date(),
+  RecordStatus = "PUBLISHED",
+  CollectionCode = "CWP_HFS"
+)
+area_31 = area_31[-1,]
+
 
 #inherit FAO area labels
 config$logger.info("Inherit FAO area multi-lingual labels")
@@ -235,6 +315,15 @@ codelists <- c("CL_FI_WATERAREA_MAJOR.csv", "CL_FI_WATERAREA_SUBAREA.csv", "CL_F
 jobDirPath <- getwd()
 setwd(config$wd)
 result <- addFisheryStatAreaNames(result, codelists)
+
+#add area31
+result[result$F_AREA == 31 & result$F_LEVEL != "MAJOR",]$NAME_EN = area_31$Name
+result[result$F_AREA == 31 & result$F_LEVEL != "MAJOR",]$NAME_FR = NA
+result[result$F_AREA == 31 & result$F_LEVEL != "MAJOR",]$NAME_ES = NA
+#harmonize F_NAME
+result$F_NAME = result$NAME_EN
+
+
 setwd(jobDirPath)
 config$logger.info(getwd())
 config$logger.info(class(result))
