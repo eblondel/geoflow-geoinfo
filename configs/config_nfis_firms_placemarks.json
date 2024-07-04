@@ -1,0 +1,72 @@
+{
+  "id": "firms-viewer",
+  "profile": {
+	"project": "FIRMS-viewer",
+	"organization": "FIRMS",
+	"logos": [
+		"http://firms.fao.org/figis/website/assets/images/templates/firms/firms_banner.gif",
+  		"https://www.fao.org/figis/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
+	],
+		"environment": {
+  		"file": "envs/geoinfo.env",
+  		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+  	}
+  },
+  "mode": "entity",
+  "metadata": {
+    "entities": [
+		{
+		  "handler": "gsheet",
+		  "source": "https://docs.google.com/spreadsheets/d/1btr0T9HmnGy7K71PzRjnW-Pwp5RejnwnYwtEm5ZcISw/edit?usp=sharing"
+		}
+	],
+    "contacts" : [
+		{
+		  "handler": "gsheet",
+		  "source": "https://docs.google.com/spreadsheets/d/1btr0T9HmnGy7K71PzRjnW-Pwp5RejnwnYwtEm5ZcISw/edit?gid=1005396552"
+		}
+	],
+	"dictionary": [
+		{
+		  "handler": "gsheet",
+		  "source": "https://docs.google.com/spreadsheets/d/1btr0T9HmnGy7K71PzRjnW-Pwp5RejnwnYwtEm5ZcISw/edit?gid=227860508"
+		}
+	]
+  },
+  "software": [
+	{
+		"id": "fao-nfi-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "INFO"
+		}
+	},
+	{
+		"id": "fao-nfi-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "INFO"
+		},
+		"properties" : {
+			"workspace": "firms",
+			"store": "firms_shapefiles"
+		}
+	}
+  ],
+  "actions": [
+	{
+		"id": "produce_firms_placemark_dataset",
+		"script": "actions/firms/produce_firms_placemark_dataset.R",
+		"run": true
+	}
+  ]
+}
