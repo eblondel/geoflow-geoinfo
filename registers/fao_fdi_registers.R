@@ -19,6 +19,9 @@ water_area_register <- function(config){
 water_area_type_register <- function(config){
 	fdi_cwp_register(config, "cl_main_water_area_types.csv")
 }
+gear_type_register <- function(config){
+	fdi_cwp_register(config, "cl_isscfg_gear.csv")
+}
 
 aggregation_method_register <- function(config){
   out <- data.frame(
