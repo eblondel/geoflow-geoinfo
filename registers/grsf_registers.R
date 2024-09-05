@@ -2,7 +2,7 @@ require(googledrive)
 require(sf)
 
 fishery_register <- function(config){
-	data = googledrive::drive_download(googledrive::drive_find("grsf_fishery_records_sf_points.gpkg")$id, overwrite = TRUE)
+	data = googledrive::drive_download(googledrive::drive_find("grsf_fishery_placemarks.gpkg")$id, overwrite = TRUE)
 	sp = sf::st_read(data$name)
 	out <- data.frame(
 		code = sp$uuid,
@@ -17,7 +17,7 @@ fishery_register <- function(config){
 
 resource_register <- function(config){
 	
-	data = googledrive::drive_download(googledrive::drive_find("grsf_resource_records_sf_points.gpkg")$id, overwrite = TRUE)
+	data = googledrive::drive_download(googledrive::drive_find("grsf_resource_placemarks.gpkg")$id, overwrite = TRUE)
 	sp = sf::st_read(data$name)
 	out <- data.frame(
 		code = sp$uuid,

@@ -5,7 +5,7 @@
 	"organization": "GRSF",
 	"logos": [],
 	"environment": {
-  		"file": "envs/geoinfo.env",
+  		"file": "envs/sdilab_admin.env",
   		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
   	}
   },
@@ -13,7 +13,7 @@
   "metadata": {
     "entities": [{
       "handler": "gsheet",
-      "source": "https://docs.google.com/spreadsheets/d/15Z-9NYNSmfeB5dCBDuma7ZMrWYmCWsIUz-VXQMWbk5s/edit?usp=sharing"
+      "source": "https://docs.google.com/spreadsheets/d/15Z-9NYNSmfeB5dCBDuma7ZMrWYmCWsIUz-VXQMWbk5s/edit?gid=145225613#gid=145225613"
     }],
 	"contacts" : [{
       "handler": "gsheet",
@@ -57,7 +57,7 @@
 		"software_type": "googledrive",
 		"parameters": {
 			"email": "{{GDRIVE_FISHERIESATLAS_EMAIL}}",
-			"token": "{GDRIVE_FISHERIESATLAS_TOKEN}"
+			"token": "{{GDRIVE_FISHERIESATLAS_TOKEN}}"
 		},
 		"properties" : {}
 	}
