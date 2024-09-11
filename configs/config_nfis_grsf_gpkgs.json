@@ -35,7 +35,7 @@
   "actions": [
 	{
 	  "id": "grsf_resource_records_geospatialization",
-	  "script" : "actions/grsf/grsf_resource_records_geospatialization.R",
+	  "script" : "actions/grsf/grsf_records_geospatialization.R",
 	  "run": true
 	}
   ]
