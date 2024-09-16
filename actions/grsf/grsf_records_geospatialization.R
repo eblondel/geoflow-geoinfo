@@ -195,7 +195,7 @@ if ("management_entity" %in% colnames(grsf_records)) {
 st_crs(grsf_approved_records_sf_centroid)=4326
 st_write(grsf_approved_records_sf_centroid, file.path(getwd(), "data", paste0(entity$identifiers$id, "_placemarks", ".gpkg")))
 #upload to Googledrive
-googledrive::drive_upload(file.path(getwd(), "data", paste0(entity$identifiers$id, "_placemarks", ".gpkg")), path = googledrive::as_dribble("fisheriesatlas/grsf/data"))
+googledrive::drive_upload(file.path(getwd(), "data", paste0(entity$identifiers$id, "_placemarks", ".gpkg")), path = googledrive::as_dribble("fisheriesatlas/grsf/data"), overwrite = TRUE)
 
 
 # Create SF object for non publishable (bbox)
@@ -309,6 +309,6 @@ zip::zip(paste0(entity$identifiers$id, "_polygons", ".zip"),
 setwd("..")
 
 #Upload ZIP to googledrive
-googledrive::drive_upload(file.path(getwd(), "data", paste0(entity$identifiers$id, "_polygons", ".zip")), path = googledrive::as_dribble("fisheriesatlas/grsf/data"))
+googledrive::drive_upload(file.path(getwd(), "data", paste0(entity$identifiers$id, "_polygons", ".zip")), path = googledrive::as_dribble("fisheriesatlas/grsf/data"), overwrite = TRUE)
 
 }
