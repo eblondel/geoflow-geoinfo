@@ -50,22 +50,22 @@
 	"actions": [
 	{
 		"id": "process-master-fishing-areas",
-		"script": "actions/fsa/process_master_fishing_areas.R",
+		"script": "actions/fsa/process1_raw_master_fishing_areas.R", 
 		"run": true
 	},
 	{
 		"id": "process-manage-fishing-areas",
-		"script": "actions/fsa/process_manage_fishing_areas.R", 
+		"script": "actions/fsa/process2_raw_manage_fishing_areas.R", 
 		"run": true
 	},
 	{
 		"id": "process-upload-fishing-areas",
-		"script": "actions/fsa/process_upload_fishing_areas.R",
+		"script": "actions/fsa/process3_raw_upload_fishing_areas.R",
 		"run": true
 	},
 	{
 		"id": "process-publish-fishing-areas",
-		"script": "actions/fsa/process_publish_fishing_areas.R",
+		"script": "actions/fsa/process4_raw_publish_fishing_areas.R",
 		"run": true
 	}
 	]

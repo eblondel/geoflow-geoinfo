@@ -1,0 +1,51 @@
+{
+	"profile": {
+		"id": "fsa-workflow",
+		"mode": "entity",
+		"environment": {
+			"file": "envs/geoinfo.env",
+			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+		}
+	},
+	"metadata": {
+	  "entities": [{
+      "handler": "gsheet",
+      "source": "https://docs.google.com/spreadsheets/d/1nxl4n0v91PmlqAn2Z1ztRkGHmKzPbZmDu2ArpPQUknA/edit?gid=0"
+    }],
+	  "contacts" : [{
+      "handler": "gsheet",
+      "source": "https://docs.google.com/spreadsheets/d/1nxl4n0v91PmlqAn2Z1ztRkGHmKzPbZmDu2ArpPQUknA/edit?gid=1863177437"
+    }]
+	},
+	"software": [
+	{
+		"id": "fi-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "DEBUG"
+		}
+	},
+	{
+		"id": "fi-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "DEBUG"
+		},
+		"properties": {
+			"workspace": "fifao",
+			"datastore": "fifao_shapefiles"
+		}
+		
+	}
+	],
+	"actions": []
+}

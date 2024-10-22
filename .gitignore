@@ -1,4 +1,7 @@
 envs
 jobs
 .Rproj.user
+.RData
+.Rhistory
 data
+reports
