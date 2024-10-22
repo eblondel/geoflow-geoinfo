@@ -373,6 +373,10 @@ export_and_zip_features(result_erased_hr_singlepart, code = "FAO_AREAS_ERASE_SIN
 result_erased_lr_singlepart <- terra::vect(result_erased_lr) %>% terra::disagg() %>% sf::st_as_sf()
 export_and_zip_features(result_erased_lr_singlepart, code = "FAO_AREAS_ERASE_SINGLEPART_LOWRES", title = "FAO statistical areas (Marine) - Simple polygons / Erased by coastline (low resolution - from former UNCS)")
 
+#recover FAO_AREAS_INLAND to reference it together with other shapefiles
+download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_INLAND&outputFormat=SHAPE-ZIP", "outputs/FAO_AREAS_INLAND.zip", mode = "wb")
+readr::write_csv(data.frame(code = "FAO_AREAS_INLAND", uri = NA, title = "FAO statistical areas (Inland)", description = "FAO statistical areas (Inland)"), "outputs/register.csv", append = T)
+
 #surfaces table
 config$logger.info("Export FAO areas surface calculations")
 readr::write_csv(as.data.frame(result_erased_hr)[,c("F_CODE", "SURFACE")],"fsa_surfaces.csv")
