@@ -347,7 +347,7 @@ readr::write_csv(data.frame(code = character(0), uri = character(0), label = cha
 config$logger.info(getwd())
 config$logger.info(class(result))
 sf::st_crs(result) = 4326
-export_and_zip_features(result, code = "FAO_AREAS_NOCOASTLINE", title = "FAO statistical areas (Marine) - Multipolygons / No coastline (for use with custom coastline resolutions)")
+export_and_zip_features(result, code = "FAO_AREAS", title = "FAO statistical areas (Marine) - Multipolygons / No coastline (for use with custom coastline resolutions)")
 
 #compute and export 'FAO_AREAS_ERASE'
 config$logger.info("Compute/Export FAO areas layer erased by land")
