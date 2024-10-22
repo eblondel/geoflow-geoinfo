@@ -381,3 +381,4 @@ readr::write_csv(data.frame(code = "FAO_AREAS_INLAND", uri = NA, title = "FAO st
 config$logger.info("Export FAO areas surface calculations")
 readr::write_csv(as.data.frame(result_erased_hr)[,c("F_CODE", "SURFACE")],"fsa_surfaces.csv")
 
+setwd("../..")
