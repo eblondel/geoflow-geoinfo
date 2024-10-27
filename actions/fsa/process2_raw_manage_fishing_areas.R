@@ -342,43 +342,70 @@ data_files = data_files[!startsWith(data_files,"CL_FI")]
 data_files = data_files[!data_files %in% c("backup", "FAO_AREAS_MASTER.zip", "FAO_AREAS_INLAND.zip")]
 unlink(data_files, force = T, recursive = T)
 dir.create("outputs")
-readr::write_csv(data.frame(code = character(0), uri = character(0), label = character(0), definition = character(0)), "outputs/register.csv")
+setwd("outputs")
+dir.create("internal")
+dir.create("public")
+setwd("..")
+readr::write_csv(data.frame(code = character(0), uri = character(0), label = character(0), definition = character(0)), "outputs/public/register.csv")
+readr::write_csv(data.frame(code = character(0), uri = character(0), label = character(0), definition = character(0)), "outputs/internal/register.csv")
 
 config$logger.info(getwd())
 config$logger.info(class(result))
 sf::st_crs(result) = 4326
-export_and_zip_features(result, code = "FAO_AREAS", title = "FAO statistical areas (Marine) - Multipolygons / No coastline (for use with custom coastline resolutions)")
+result$ID = NULL
+result$F_STATUS = as.character(result$F_STATUS)
+result$F_STATUS = unlist(lapply(result$F_STATUS, function(x){
+  switch(x, "1" = "endorsed", "0" = "draft", "unknown")
+}))
+export_and_zip_features(result, code = "FAO_AREAS_NOCOASTLINE", 
+                        title = "FAO statistical areas (Marine) - Multipolygons / No coastline (for use with custom coastline resolutions)",
+                        dir = "outputs/public")
 
 #compute and export 'FAO_AREAS_ERASE'
 config$logger.info("Compute/Export FAO areas layer erased by land")
 continent.high <- WFS$getFeatures("fifao:UN_CONTINENT2_new")
 sf::st_crs(continent.high) = 4326
-result_erased_hr <- eraseFisheryStatAreas(result, continent.high)
-export_and_zip_features(result_erased_hr, code = "FAO_AREAS_ERASE", title = "FAO statistical areas (Marine) - Multipolygons / Erased by coastline (intermediate resolution - aligned with UN countries & territories)")
+result_erased_hr <- eraseFisheryStatAreas(result, continent.high, computeSurfaces = FALSE)
+result_erased_hr$Id = NULL
+export_and_zip_features(result_erased_hr, code = "FAO_AREAS_ERASE", 
+                        title = "FAO statistical areas (Marine) - Multipolygons / Erased by coastline (intermediate resolution - aligned with UN countries & territories)",
+                        dir = "outputs/public")
 
 continent.low <- WFS$getFeatures("fifao:UN_CONTINENT2")
 sf::st_crs(continent.low) = 4326
-result_erased_lr <- eraseFisheryStatAreas(result, continent.low)
-export_and_zip_features(result_erased_lr, code = "FAO_AREAS_ERASE_LOWRES", title = "FAO statistical areas (Marine) - Multipolygons / Erased by coastline (low resolution - from former UNCS)")
+result_erased_lr <- eraseFisheryStatAreas(result, continent.low, computeSurfaces = FALSE)
+result_erased_lr$Id = NULL
+export_and_zip_features(result_erased_lr, code = "FAO_AREAS_ERASE_LOWRES", 
+                        title = "FAO statistical areas (Marine) - Multipolygons / Erased by coastline (low resolution - from former UNCS)",
+                        dir = "outputs/public")
 
 #compute and export 'FAO_AREAS_SINGLEPART' ('FAO_AREAS' with Polygons instead of MultiPolygons)
 config$logger.info("Compute/Export single part feature collections")
 result_singlepart <- terra::vect(result) %>% terra::disagg() %>% sf::st_as_sf()
-export_and_zip_features(result_singlepart, code = "FAO_AREAS_SINGLEPART", title = "FAO statistical areas (Marine) - Simple polygons / No coastline (for use with custom coastline resolutions)")
+result_singlepart$ID = NULL
+export_and_zip_features(result_singlepart, code = "FAO_AREAS_SINGLEPART", 
+                        title = "FAO statistical areas (Marine) - Simple polygons / No coastline (for use with custom coastline resolutions)",
+                        dir = "outputs/internal")
 
 #compute and export 'FAO_AREAS_ERASE_SINGLEPART' ('FAO_AREAS_ERASE' with Polygons instead of MultiPolygons)
 config$logger.info("Compute/Export single part feature collections")
 result_erased_hr_singlepart <- terra::vect(result_erased_hr) %>% terra::disagg() %>% sf::st_as_sf()
-export_and_zip_features(result_erased_hr_singlepart, code = "FAO_AREAS_ERASE_SINGLEPART", title = "FAO statistical areas (Marine) - Simple polygons / Erased by coastline (intermediate resolution - aligned with UN countries & territories)")
+export_and_zip_features(result_erased_hr_singlepart, code = "FAO_AREAS_ERASE_SINGLEPART", 
+                        title = "FAO statistical areas (Marine) - Simple polygons / Erased by coastline (intermediate resolution - aligned with UN countries & territories)",
+                        dir = "outputs/internal")
 result_erased_lr_singlepart <- terra::vect(result_erased_lr) %>% terra::disagg() %>% sf::st_as_sf()
-export_and_zip_features(result_erased_lr_singlepart, code = "FAO_AREAS_ERASE_SINGLEPART_LOWRES", title = "FAO statistical areas (Marine) - Simple polygons / Erased by coastline (low resolution - from former UNCS)")
+result_erased_lr_singlepart$Id = NULL
+export_and_zip_features(result_erased_lr_singlepart, code = "FAO_AREAS_ERASE_SINGLEPART_LOWRES", 
+                        title = "FAO statistical areas (Marine) - Simple polygons / Erased by coastline (low resolution - from former UNCS)",
+                        dir = "outputs/internal")
 
 #recover FAO_AREAS_INLAND to reference it together with other shapefiles
-download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_INLAND&outputFormat=SHAPE-ZIP", "outputs/FAO_AREAS_INLAND.zip", mode = "wb")
-readr::write_csv(data.frame(code = "FAO_AREAS_INLAND", uri = NA, title = "FAO statistical areas (Inland)", description = "FAO statistical areas (Inland)"), "outputs/register.csv", append = T)
+download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_INLAND&outputFormat=SHAPE-ZIP", "outputs/public/FAO_AREAS_INLAND.zip", mode = "wb")
+readr::write_csv(data.frame(code = "FAO_AREAS_INLAND", uri = NA, title = "FAO statistical areas (Inland)", description = "FAO statistical areas (Inland)"), "outputs/public/register.csv", append = T)
 
 #surfaces table
 config$logger.info("Export FAO areas surface calculations")
+result_erased_hr$SURFACE = as(sf::st_area(sf::st_transform(result_erased_hr, "+proj=eck4")), "numeric")
 readr::write_csv(as.data.frame(result_erased_hr)[,c("F_CODE", "SURFACE")],"fsa_surfaces.csv")
 
 setwd("../..")
