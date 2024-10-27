@@ -2,6 +2,10 @@
 	"profile": {
 		"id": "fsa-workflow",
 		"mode": "entity",
+		"logos": [
+  		"http://firms.fao.org/figis/website/assets/images/templates/firms/firms_banner.gif",
+    	"https://www.fao.org/figis/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
+  	],
 		"environment": {
 			"file": "envs/geoinfo.env",
 			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
@@ -15,11 +19,15 @@
 	  "contacts" : [{
       "handler": "gsheet",
       "source": "https://docs.google.com/spreadsheets/d/1nxl4n0v91PmlqAn2Z1ztRkGHmKzPbZmDu2ArpPQUknA/edit?gid=1863177437"
+    }],
+    "dictionary" : [{
+      "handler": "gsheet",
+      "source": "https://docs.google.com/spreadsheets/d/1nxl4n0v91PmlqAn2Z1ztRkGHmKzPbZmDu2ArpPQUknA/edit?gid=2081779363"
     }]
 	},
 	"software": [
 	{
-		"id": "fi-geonetwork",
+		"id": "nfi-geonetwork",
 		"type": "output",
 		"software_type": "geonetwork",
 		"parameters": {
@@ -31,7 +39,7 @@
 		}
 	},
 	{
-		"id": "fi-geoserver",
+		"id": "nfi-geoserver",
 		"type": "output",
 		"software_type": "geoserver",
 		"parameters": {
@@ -47,5 +55,36 @@
 		
 	}
 	],
-	"actions": []
+	"actions": [
+	  {
+      "id": "geometa-create-iso-19115",
+      "run": true,
+  	  "options": {
+  	      "logo": true
+  	  }
+	  },
+	  {
+  	  "id": "geometa-create-iso-19110",
+      "run": true,
+  	  "options": {
+  		  "exclude_values_for_attributes": ["F_NAME", "SUBOCEAN", "F_AREA", "F_SUBAREA", "F_DIVISION", "F_SUBDIVIS", "F_SUBUNIT", "NAME_EN", "NAME_FR", "NAME_ES"]
+  	   }
+	  },
+	  {
+  	  "id": "geonapi-publish-iso-19139",
+  	  "run":true
+	  },
+	  {
+  	  "id": "geosapi-publish-ogc-services",
+  	  "run":true,
+  	  "options": {
+  		  "createWorkspace": true,
+  		  "createStore": true,
+  		  "overwrite": true,
+  		  "describe_wms_relation_with_category": false,
+        "describe_wms_relation_with_ogc_service_description" : false
+  	  }
+	  }
+	  
+	]
 }
