@@ -1,8 +1,9 @@
 #
-# Scripts to publish the fishing areas GIS data & metadata to GeoServer/Geonetwork
+# Scripts to publish the fishing areas internal GIS datasets to GeoServer
+# Public datasets are not published with this script, but with a dedicated geoflow
+# (See config_nfis_fao_areas_main.json)
 #
 # @author eblondel
-# @date 2018/09/25
 #
 config$logger.info("============================================================================================")
 config$logger.info("PUBLISH main FAO areas datasets...")
@@ -31,9 +32,9 @@ GSCONFIG <- config$software$output$geoserver_config
 gs_ws_name <- GSCONFIG$properties$workspace
 gs_ds_name <- GSCONFIG$properties$datastore
 
-#publish raw layers (all)
+#publish internal layers (all)
 #------------------------
-path <- paste(getwd(), "data",sep="/")
+path <- file.path(getwd(), "data/fsa/outputs/internal")
 shapefiles_to_upload <- list.files(path, pattern = ".zip", full.names = TRUE)
 for(shapefile in shapefiles_to_upload){
 	
@@ -42,8 +43,6 @@ for(shapefile in shapefiles_to_upload){
 	gs_ft_name <- unlist(strsplit(shp_splits[length(shp_splits)],".zip"))[1]
 	featureType <- GSFeatureType$new()
 	gs_ft_newname <- gs_ft_name
-	if(gs_ft_name == "FAO_AREAS") gs_ft_newname <- "FAO_AREAS_NOCOASTLINE"
-	if(gs_ft_name == "FAO_AREAS_ERASE") gs_ft_newname <- "FAO_AREAS"
 	featureType$setName(gs_ft_newname)
 	featureType$setNativeName(gs_ft_name)
 	featureType$setAbstract(gs_ft_newname)
@@ -81,131 +80,7 @@ for(shapefile in shapefiles_to_upload){
 	}	
 }
 
-#publish main draft layer (whatever status)
-#--------------------------------------
-gs_ft_name_fifao <- "FAO_AREAS"
-featureType_fifao <- GSFeatureType$new()
-featureType_fifao$setName(gs_ft_name_fifao)
-featureType_fifao$setNativeName("FAO_AREAS_ERASE")
-featureType_fifao$setAbstract("A FAO AREAS layer, erased by UN CONTINENT and containing all FAO Areas (all levels) officially endorsed by CWP or in draft stage")
-featureType_fifao$setTitle("FAO Areas and its breakdown")
-featureType_fifao$setSrs("EPSG:4326")
-featureType_fifao$setNativeCRS("EPSG:4326")
-featureType_fifao$setEnabled(TRUE)
-featureType_fifao$setProjectionPolicy("REPROJECT_TO_DECLARED")
-featureType_fifao$setLatLonBoundingBox(-180,-90,180,90, crs = "EPSG:4326")
-featureType_fifao$setNativeBoundingBox(-180,-90,180,90, crs ="EPSG:4326")
 
-#action on GS featuretype
-ft <- GS$getFeatureType(gs_ws_name, gs_ds_name, gs_ft_name_fifao)
-if(!is(ft, "GSFeatureType")){
-	config$logger.info(sprintf("Creating feature type '%s'", gs_ft_name_fifao))
-	ft_created <- GS$createFeatureType(gs_ws_name, gs_ds_name, featureType_fifao)
-}else{
-	config$logger.info(sprintf("Updating feature type '%s'", gs_ft_name_fifao))
-	ft_updated <- GS$updateFeatureType(gs_ws_name, gs_ds_name, featureType_fifao)
-}
-	
-#geoserver layer
-layer_fifao <- GSLayer$new()
-layer_fifao$setName(gs_ft_name_fifao)
-layer_fifao$setDefaultStyle("all_fao_areas_style2")
-layer_fifao$addStyle("generic")
-
-#action on GS layer
-lyr_fifao <- GS$getLayer(gs_ft_name_fifao)
-if(!is(lyr_fifao, "GSLayer")){
-	config$logger.info(sprintf("Creating layer '%s'", gs_ft_name_fifao))
-	lyr_created <- GS$createLayer(layer_fifao)	
-}else{
-	config$logger.info(sprintf("Updating layer '%s'", gs_ft_name_fifao))
-	lyr_updated <- GS$updateLayer(layer_fifao)
-}	
-
-
-#publish main public layer (status = 1)
-#--------------------------------------
-gs_ft_name_cwp <- "FAO_AREAS_CWP"
-featureType <- GSFeatureType$new()
-featureType$setName(gs_ft_name_cwp)
-featureType$setNativeName("FAO_AREAS_ERASE")
-featureType$setAbstract("A FAO AREAS layer, erased by UN CONTINENT and containing all FAO Areas (all levels) officially endorsed by CWP")
-featureType$setTitle("FAO Areas and its breakdown (endorsed by CWP)")
-featureType$setSrs("EPSG:4326")
-featureType$setNativeCRS("EPSG:4326")
-featureType$setEnabled(TRUE)
-featureType$setProjectionPolicy("REPROJECT_TO_DECLARED")
-featureType$setLatLonBoundingBox(-180,-90,180,90, crs = "EPSG:4326")
-featureType$setNativeBoundingBox(-180,-90,180,90, crs ="EPSG:4326")
-featureType$setCqlFilter("F_STATUS = 1")
-
-#action on GS featuretype
-ft <- GS$getFeatureType(gs_ws_name, gs_ds_name, gs_ft_name_cwp)
-if(!is(ft, "GSFeatureType")){
-	config$logger.info(sprintf("Creating feature type '%s'", gs_ft_name_cwp))
-	ft_created <- GS$createFeatureType(gs_ws_name, gs_ds_name, featureType)
-}else{
-	config$logger.info(sprintf("Updating feature type '%s'", gs_ft_name_cwp))
-	ft_updated <- GS$updateFeatureType(gs_ws_name, gs_ds_name, featureType)
-}
-	
-#geoserver layer
-layer <- GSLayer$new()
-layer$setName(gs_ft_name_cwp)
-layer$setDefaultStyle("all_fao_areas_style2")
-layer$addStyle("generic")
-
-#action on GS layer
-lyr <- GS$getLayer(gs_ft_name_cwp)
-if(!is(lyr, "GSLayer")){
-	config$logger.info(sprintf("Creating layer '%s'", gs_ft_name_cwp))
-	lyr_created <- GS$createLayer(layer)	
-}else{
-	config$logger.info(sprintf("Updating layer '%s'", gs_ft_name_cwp))
-	lyr_updated <- GS$updateLayer(layer)
-}	
-
-#publish main public layer (status = 1) NO COASTLINE
-#--------------------------------------
-gs_ft_name_cwp <- "FAO_AREAS_CWP_NOCOASTLINE"
-featureType <- GSFeatureType$new()
-featureType$setName(gs_ft_name_cwp)
-featureType$setNativeName("FAO_AREAS")
-featureType$setAbstract("A FAO AREAS layer, not erased by UN_CONTINENT and containing all FAO Areas (all levels) officially endorsed by CWP")
-featureType$setTitle("FAO Areas and its breakdown (endorsed by CWP) - no coastline")
-featureType$setSrs("EPSG:4326")
-featureType$setNativeCRS("EPSG:4326")
-featureType$setEnabled(TRUE)
-featureType$setProjectionPolicy("REPROJECT_TO_DECLARED")
-featureType$setLatLonBoundingBox(-180,-90,180,90, crs = "EPSG:4326")
-featureType$setNativeBoundingBox(-180,-90,180,90, crs ="EPSG:4326")
-featureType$setCqlFilter("F_STATUS = 1")
-
-#action on GS featuretype
-ft <- GS$getFeatureType(gs_ws_name, gs_ds_name, gs_ft_name_cwp)
-if(!is(ft, "GSFeatureType")){
-	config$logger.info(sprintf("Creating feature type '%s'", gs_ft_name_cwp))
-	ft_created <- GS$createFeatureType(gs_ws_name, gs_ds_name, featureType)
-}else{
-	config$logger.info(sprintf("Updating feature type '%s'", gs_ft_name_cwp))
-	ft_updated <- GS$updateFeatureType(gs_ws_name, gs_ds_name, featureType)
-}
-	
-#geoserver layer
-layer <- GSLayer$new()
-layer$setName(gs_ft_name_cwp)
-layer$setDefaultStyle("all_fao_areas_style2")
-layer$addStyle("generic")
-
-#action on GS layer
-lyr <- GS$getLayer(gs_ft_name_cwp)
-if(!is(lyr, "GSLayer")){
-	config$logger.info(sprintf("Creating layer '%s'", gs_ft_name_cwp))
-	lyr_created <- GS$createLayer(layer)	
-}else{
-	config$logger.info(sprintf("Updating layer '%s'", gs_ft_name_cwp))
-	lyr_updated <- GS$updateLayer(layer)
-}	
 
 #publish layers for FIGIS, by each level of FAO areas
 #----------------------------------------------------
@@ -291,58 +166,3 @@ for(figis_fsa_layername in names(figis_fsa_layers)){
 		lyr_updated <- GS$updateLayer(layer)
 	}	
 }
-
-#publish fsa workspace layers
-#------------------------
-#path <- paste(getwd(), "data",sep="/")
-#shapefiles_to_upload <- list.files(path, pattern = ".zip", full.names = TRUE)
-#for(shapefile in shapefiles_to_upload){
-#	
-#	#geoserver featuretype
-#	shp_splits <- unlist(strsplit(shapefile,"/"))
-#	gs_ft_name <- unlist(strsplit(shp_splits[length(shp_splits)],".zip"))[1]
-#	if(gs_ft_name == "FAO_AREAS_SINGLEPART") next;
-#	gs_ft_newname <- gs_ft_name
-#	if(gs_ft_name == "FAO_AREAS") gs_ft_newname <- "FAO_AREAS_NOCOASTLINE"
-#	if(gs_ft_name == "FAO_AREAS_ERASE") gs_ft_newname <- "FAO_AREAS"
-#	
-#	featureType <- GSFeatureType$new()
-#	featureType$setName(gs_ft_newname)
-#	featureType$setNativeName(gs_ft_name)
-#	featureType$setAbstract(gs_ft_newname)
-#	featureType$setTitle(gs_ft_newname)
-#	featureType$setSrs("EPSG:4326")
-#	featureType$setNativeCRS("EPSG:4326")
-#	featureType$setEnabled(TRUE)
-#	featureType$setProjectionPolicy("REPROJECT_TO_DECLARED")
-#	featureType$setLatLonBoundingBox(-180,-90,180,90, crs = "EPSG:4326")
-#	featureType$setNativeBoundingBox(-180,-90,180,90, crs ="EPSG:4326")
-#	featureType$setCqlFilter("F_STATUS = 1")
-#	
-#	#action on GS featuretype
-#	ft <- GS$getFeatureType(gs_ws_name,gs_ds_name, gs_ft_newname)
-#	if(!is(ft, "GSFeatureType")){
-#		config$logger.info(sprintf("Creating feature type '%s'", gs_ft_newname))
-#		ft_created <- GS$createFeatureType(gs_ws_name,gs_ds_name, featureType)
-#	}else{
-#		config$logger.info(sprintf("Updating feature type '%s'", gs_ft_newname))
-#		ft_updated <- GS$updateFeatureType(gs_ws_name,gs_ds_name, featureType)
-#	}
-#	
-#	#geoserver layer
-#	layer <- GSLayer$new()
-#	layer$setName(gs_ft_newname)
-#	layer$setDefaultStyle("all_fao_areas_style2")
-#	
-#	#action on GS layer
-#	lyr <- GS$getLayer(gs_ft_newname)
-#	if(!is(lyr, "GSLayer")){
-#		config$logger.info(sprintf("Creating layer '%s'", gs_ft_newname))
-#		lyr_created <- GS$createLayer(layer)	
-#	}else{
-#		config$logger.info(sprintf("Updating layer '%s'", gs_ft_newname))
-#		lyr_updated <- GS$updateLayer(layer)
-#	}	
-#}
-
-
