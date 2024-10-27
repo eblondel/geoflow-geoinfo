@@ -400,8 +400,37 @@ export_and_zip_features(result_erased_lr_singlepart, code = "FAO_AREAS_ERASE_SIN
                         dir = "outputs/internal")
 
 #recover FAO_AREAS_INLAND to reference it together with other shapefiles
-download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_INLAND&outputFormat=SHAPE-ZIP", "outputs/public/FAO_AREAS_INLAND.zip", mode = "wb")
-readr::write_csv(data.frame(code = "FAO_AREAS_INLAND", uri = NA, title = "FAO statistical areas (Inland)", description = "FAO statistical areas (Inland)"), "outputs/public/register.csv", append = T)
+download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&request=GetFeature&version=1.0.0&typeName=fifao:FAO_AREAS_INLAND&outputFormat=SHAPE-ZIP", "FAO_AREAS_INLAND.zip", mode = "wb")
+zip::unzip("FAO_AREAS_INLAND.zip")
+fao_areas_inland = sf::st_read("FAO_AREAS_INLAND.shp")
+unlink(list.files(pattern = "FAO_AREAS_INLAND"))
+fao_areas_inland$F_CODE = fao_areas_inland$F_AREA_INL
+fao_areas_inland$F_AREA_INL = NULL
+fao_areas_inland$F_LEVEL = "MAJOR"
+fao_areas_inland$F_STATUS = "endorsed"
+fao_areas_inland$F_NAME = NA
+fao_areas_inland$OCEAN = NA
+fao_areas_inland$SUBOCEAN = NA
+fao_areas_inland$F_AREA = NA
+fao_areas_inland$F_SUBAREA = NA
+fao_areas_inland$F_DIVISION = NA
+fao_areas_inland$F_SUBDIVIS = NA
+fao_areas_inland$F_SUBUNIT = NA
+fao_areas_inland$NAME_EN = unlist(lapply(fao_areas_inland$F_CODE, function(x){
+  switch(x,
+         "01" = "Africa - Inland waters",
+         "02" = "America, North - Inland waters",
+         "03" = "America, South - Inland waters",
+         "04" = "Asia - Inland waters",
+         "05" = "Europe - Inland waters",
+         "06" = "Oceania - Inland waters",
+         "08" = "Antarctica - Inland waters")
+}))
+fao_areas_inland$NAME_FR = NA
+fao_areas_inland$NAME_ES = NA
+export_and_zip_features(fao_areas_inland, code = "FAO_AREAS_INLAND", 
+                        title = "FAO statistical areas (Inland)", 
+                        dir = "outputs/public")
 
 #surfaces table
 config$logger.info("Export FAO areas surface calculations")
