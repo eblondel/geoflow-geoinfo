@@ -67,7 +67,7 @@
   	  "id": "geometa-create-iso-19110",
       "run": true,
   	  "options": {
-  		  "exclude_values_for_attributes": ["F_NAME", "SUBOCEAN", "F_AREA", "F_SUBAREA", "F_DIVISION", "F_SUBDIVIS", "F_SUBUNIT", "NAME_EN", "NAME_FR", "NAME_ES"]
+  		  "exclude_values_for_attributes": ["ID", "F_NAME", "SUBOCEAN", "F_AREA", "F_SUBAREA", "F_DIVISION", "F_SUBDIVIS", "F_SUBUNIT", "NAME_EN", "NAME_FR", "NAME_ES"]
   	   }
 	  },
 	  {
