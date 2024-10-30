@@ -92,7 +92,7 @@ figis_fsa_layers <- list(
 		defaultStyle = "Main_FAO_style"
 	),
 	FAO_MAJOR_Labels = list(
-		source = "FAO_AREAS",
+		source = "FAO_AREAS_NOCOASTLINE",
 		title = "FAO Major areas labels",
 		cql_filter = "F_LEVEL = 'MAJOR'",
 		defaultStyle = "Main_FAO_style_labels_viewer",
