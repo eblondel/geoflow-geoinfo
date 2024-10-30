@@ -27,6 +27,18 @@
 	},
 	"software": [
 	{
+		"id": "nfi-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "INFO"
+		}
+	},
+	{
 		"id": "nfi-geoserver",
 		"type": "output",
 		"software_type": "geoserver",
