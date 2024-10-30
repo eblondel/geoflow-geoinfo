@@ -19,18 +19,6 @@
 		}
 	},
 	{
-		"id": "fi-geonetwork",
-		"type": "output",
-		"software_type": "geonetwork",
-		"parameters": {
-			"url": "{{GEONETWORK_URL}}",
-			"user": "{{GEONETWORK_USER}}",
-			"pwd": "{{GEONETWORK_PASSWORD}}",
-			"version": "{{GEONETWORK_VERSION}}",
-			"logger": "DEBUG"
-		}
-	},
-	{
 		"id": "fi-geoserver",
 		"type": "output",
 		"software_type": "geoserver",
