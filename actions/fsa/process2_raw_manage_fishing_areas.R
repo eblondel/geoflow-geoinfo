@@ -198,7 +198,8 @@ addFisheryStatAreaNames <- function(features, codelists){
 	features$ID <- 1:nrow(features)
 	featData <- merge(features, fsa.labels, by.x = "F_CODE", by.y = "CODE", all.x = TRUE, all.y = FALSE)
 	featData <- featData[order(featData$ID),]
-	features <- featData
+	featData$ID <- sapply(featData$F_CODE, function(x){ paste0("fao:", tolower(gsub(" ", "", x))) })
+	features <- featData[,c("ID", colnames(featData)[colnames(featData)!="ID"])]
 	return(features)
 }
 
@@ -211,7 +212,6 @@ eraseFisheryStatAreas <- function(features, eraser, computeSurfaces = TRUE){
 		out$SURFACE = as(sf::st_area(sf::st_transform(out, "+proj=eck4")), "numeric")
 	}
 	out$ID.1 = NULL
-	out$ID = NULL
 	out$gml_id = NULL
 	return(out)
 }
@@ -352,7 +352,6 @@ readr::write_csv(data.frame(code = character(0), uri = character(0), label = cha
 config$logger.info(getwd())
 config$logger.info(class(result))
 sf::st_crs(result) = 4326
-result$ID = NULL
 result$F_STATUS = as.character(result$F_STATUS)
 result$F_STATUS = unlist(lapply(result$F_STATUS, function(x){
   switch(x, "1" = "endorsed", "0" = "draft", "unknown")
@@ -382,7 +381,6 @@ export_and_zip_features(result_erased_lr, code = "FAO_AREAS_ERASE_LOWRES",
 #compute and export 'FAO_AREAS_SINGLEPART' ('FAO_AREAS' with Polygons instead of MultiPolygons)
 config$logger.info("Compute/Export single part feature collections")
 result_singlepart <- terra::vect(result) %>% terra::disagg() %>% sf::st_as_sf()
-result_singlepart$ID = NULL
 export_and_zip_features(result_singlepart, code = "FAO_AREAS_SINGLEPART", 
                         title = "FAO statistical areas (Marine) - Simple polygons / No coastline (for use with custom coastline resolutions)",
                         dir = "outputs/internal")
@@ -404,6 +402,7 @@ download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&reque
 zip::unzip("FAO_AREAS_INLAND.zip")
 fao_areas_inland = sf::st_read("FAO_AREAS_INLAND.shp")
 unlink(list.files(pattern = "FAO_AREAS_INLAND"))
+fao_areas_inland$ID = paste0("fao:",fao_areas_inland$F_AREA_INL)
 fao_areas_inland$F_CODE = fao_areas_inland$F_AREA_INL
 fao_areas_inland$F_AREA_INL = NULL
 fao_areas_inland$F_LEVEL = "MAJOR"
@@ -435,6 +434,6 @@ export_and_zip_features(fao_areas_inland, code = "FAO_AREAS_INLAND",
 #surfaces table
 config$logger.info("Export FAO areas surface calculations")
 result_erased_hr$SURFACE = as(sf::st_area(sf::st_transform(result_erased_hr, "+proj=eck4")), "numeric")
-readr::write_csv(as.data.frame(result_erased_hr)[,c("F_CODE", "SURFACE")],"fsa_surfaces.csv")
+readr::write_csv(as.data.frame(result_erased_hr)[,c("ID", "F_CODE", "SURFACE")],"fsa_surfaces.csv")
 
 setwd("../..")
