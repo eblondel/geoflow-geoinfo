@@ -1,6 +1,8 @@
 #fsa_register_area
 fsa_register_area <- function(config){
   fsa = sf::st_read("data/fsa/FAO_AREAS_ERASE.shp")
+  fsa_inland = sf::st_read("data/fsa/FAO_AREAS_INLAND.shp")
+  fsa = rbind(fsa, fsa_inland)
   out <- data.frame(
     code = fsa$F_CODE,
     uri = unlist(lapply(1:nrow(fsa), function(i){
