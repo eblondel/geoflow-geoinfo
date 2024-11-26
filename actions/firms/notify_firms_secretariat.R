@@ -118,7 +118,7 @@ Report automatically generated on {Sys.time()} by the FIRMS map viewer workflow
 	  	"kiran.viparthi@fao.org", "anton.ellenbroek@fao.org", "yann.laurent@fao.org", "james.geehan@fao.org"
 	  ),
 	  subject = sprintf("FIRMS stocks & fisheries map viewer update (%s) - %s dataset", Sys.Date(), entity$resources$firmsDomainName),
-	  credentials = creds_key("firms.viewer@gmail.com")
+	  credentials = SMTP
 	  )
 	}
 
