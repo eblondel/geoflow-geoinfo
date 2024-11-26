@@ -8,7 +8,7 @@
   		"https://www.fao.org/figis/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
 	],
 	"environment": {
-  		"file": "envs/geoinfo.env",
+  		"file": "envs/geoinfo-review.env",
   		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
   	}
   },
@@ -60,13 +60,30 @@
 			"workspace": "firms",
 			"store": "firms_shapefiles"
 		}
+	},
+	{
+	  "id": "geoflow-firms-smtp",
+	  "type": "output",
+	  "software_type": "smtp",
+	  "parameters": {
+	    "user": "{{SMTP_GEOFLOW_FIRMS_USER}}",
+	    "pass_envvar": "SMTP_GEOFLOW_FIRMS_PASSWORD",
+	    "provider": "{{SMTP_GEOFLOW_FIRMS_PROVIDER}}",
+	    "host": "{{SMTP_GEOFLOW_FIRMS_HOST}}",
+	    "port": "{{SMTP_GEOFLOW_FIRMS_PORT}}"
+	  }
 	}
   ],
   "actions": [
 	{
 		"id": "produce_firms_placemark_dataset",
-		"script": "actions/firms/produce_firms_placemark_dataset.R",
+		"script": "../actions/firms/produce_firms_placemark_dataset.R",
 		"run": true
+	},
+	{
+	  "id": "notify_firms_secretariat",
+	  "script": "../actions/firms/notify_firms_secretariat.R",
+	  "run": true
 	}
   ]
 }

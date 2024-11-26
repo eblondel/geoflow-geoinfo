@@ -10,13 +10,13 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	require(gt)
 	
 	#host (needed to init OGC WFS client, pointing to test-figisapps or prod -www.fao.org)
+	IS_REVIEW = FALSE
 	HOST = paste0(unlist(strsplit(attr(entity$data$source[[1]], "uri"), ".org/"))[1], ".org")
-	HOST = "https://www.fao.org" #hardcoded for now, figisapps test WFS is off
-	
+	if(HOST == "https://fisheries.review.fao.org") IS_REVIEW = TRUE
 	
 	#WFS
 	WFS = ows4R::WFSClient$new(
-		url = file.path(HOST, if(regexpr("figisapps", HOST)>0) "figis" else "fishery", "geoserver/wfs"),
+		url = file.path(HOST, "fishery", "geoserver/wfs"),
 		serviceVersion = "1.0.0",
 		logger = "INFO"
 	)
@@ -30,9 +30,11 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	
 	#read inventories
 	doc = jsonlite::read_json(file.path("data", entity$data$source[[1]]))
+	refs = sapply(doc, function(x){x$document$inventoryId})
 	
-	#produce dataset
-	result = RFirmsGeo::buildSpatialDataset(host = HOST, domain = firmsDomain, doc = doc)
+	#produce dataset (all geo-references are taken from production Geoserver)
+	result = RFirmsGeo::buildSpatialDataset(host = "https://www.fao.org", domain = firmsDomain, doc = doc)
+	refs_not_in_result = refs[!refs %in% result$FIGIS_ID]
 	
 	#shapefile filename
 	filename = unlist(strsplit(entity$data$uploadSource[[1]], ".zip"))[1]
@@ -47,7 +49,7 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	refId = "FIGIS_ID"
 	if("OLD_ID" %in% names(result)) refId = "OLD_ID"
 	result_in_old <- result[result[[refId]] %in% result_old$FIGIS_ID,]
-	st_crs(result_in_old) <- st_crs(result_old)
+	sf::st_crs(result_in_old) <- sf::st_crs(result_old)
 	
 	#reports
 	dir.create("reports")
@@ -58,12 +60,9 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	if(nrow(new_records)>0){
 		new_records$x <- NULL
 		new_records$y <- NULL
-		new_records$FACTSHEET <- switch(refId,
-			"OLD_ID" = sprintf('https://firms.fao.org/firms/%s/%s/%s', firmsDomain, new_records$OLD_ID, new_records$LANG),
-			"FIGIS_ID" = ""
-		)
-		new_records$VIEWER <- sprintf('https://www.fao.org/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', firmsDomain, new_records[,refId])
-		new_records_filename <- sprintf("FIRMS_MapViewer_%s_new_records_%s.xlsx", firmsDomainName, Sys.Date())
+		new_records$FACTSHEET <- sprintf('%s/fishery/firms/%s/%s', HOST, firmsDomain, new_records$INV_OBS_ID)
+		new_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, new_records$INV_OBS_ID)
+		new_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_new_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(new_records, file.path("reports", new_records_filename))
 		new_records_rep <- new_records
 		new_records_rep$FACTSHEET <- sprintf('<a href="%s">Link</a>', new_records_rep$FACTSHEET)
@@ -85,17 +84,14 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	}
 
 	#updates
-	updated_records <- as.data.frame(result_in_old[!apply(st_within(result_in_old, st_buffer(result_old, dist = 0.1)), 1, any),])
+	updated_records <- as.data.frame(result_in_old[!apply(sf::st_within(result_in_old, sf::st_buffer(result_old, dist = 0.1)), 1, any),])
 	updated_records_table <- NULL
 	updated_records_filename <- NULL
 	if(nrow(updated_records)>0){
 		updated_records$geometry <- NULL
-		updated_records$FACTSHEET <- switch(refId,
-			"OLD_ID" = sprintf('https://firms.fao.org/firms/%s/%s/%s', firmsDomain, updated_records$OLD_ID, updated_records$LANG),
-			"FIGIS_ID" = ""
-		)
-		updated_records$VIEWER <- sprintf('https://www.fao.org/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', firmsDomain, updated_records[,refId])
-		updated_records_filename <- sprintf("FIRMS_MapViewer_%s_updated_records_%s.xlsx", firmsDomainName, Sys.Date())
+		updated_records$FACTSHEET <- sprintf('%s/fishery/firms/%s/%s', HOST, firmsDomain, updated_records$INV_OBS_ID)
+		updated_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, updated_records$INV_OBS_ID)
+		updated_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_updated_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(updated_records, file.path("reports", updated_records_filename))
 		updated_records_rep <- updated_records
 		updated_records_rep$FACTSHEET <- sprintf('<a href="%s">Link</a>', updated_records_rep$FACTSHEET)
@@ -118,18 +114,16 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	
 	#deleted/unpublished records
 	deleted_records <- as.data.frame(result_old[!result_old$FIGIS_ID %in% result[[refId]],])
+	deleted_records$OLD_ID = deleted_records$FIGIS_ID
 	deleted_records_table <- NULL
 	deleted_records_filename <- NULL
 	if(nrow(deleted_records)>0){
 		deleted_records$gml_id <- NULL
 		deleted_records$geometry <- NULL
 		deleted_records$the_geom <- NULL
-		deleted_records$FACTSHEET <- switch(refId,
-			"OLD_ID" = sprintf('https://firms.fao.org/firms/%s/%s/%s', firmsDomain, deleted_records$OLD_ID, deleted_records$LANG),
-			"FIGIS_ID" = ""
-		)
-		deleted_records$VIEWER <- sprintf('https://www.fao.org/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', firmsDomain, deleted_records[,refId])
-		deleted_records_filename <- sprintf("FIRMS_MapViewer_%s_deleted_records_%s.xlsx", firmsDomainName, Sys.Date())
+		deleted_records$FACTSHEET <- sprintf('%s/firms/%s/%s/%s', if(IS_REVIEW) {"https://figisapps.fao.org"}else{"https://firms.fao.org"}, firmsDomain, deleted_records$OLD_ID, deleted_records$LANG) #TODO refactor once migration finished
+		deleted_records$VIEWER <- "-"
+		deleted_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_deleted_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(deleted_records, file.path("reports", deleted_records_filename))
 		deleted_records_rep <- deleted_records
 		deleted_records_rep$FACTSHEET <- sprintf('<a href="%s">Link</a>', deleted_records_rep$FACTSHEET)
@@ -220,6 +214,8 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	})
 	result_by_agency$added <- NULL
 	result_by_agency$deleted <- NULL
+	if(any(is.na(result_by_agency$after))) result_by_agency[is.na(result_by_agency$after),]$after = "–"
+	if(any(is.na(result_by_agency$before))) result_by_agency[is.na(result_by_agency$before),]$before = "–"
 	colnames(result_by_agency) <- c("Agency", "Number of records", "Previously", "Changes")
 	result_by_agency_table <- result_by_agency %>%
 		gt::gt() %>%
@@ -227,6 +223,9 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 		  gt::as_raw_html()
 
 	#resources
+	entity$addResource("is_review", IS_REVIEW)
+	entity$addResource("host", HOST)
+	entity$addResource("firmsDomain", firmsDomain)
 	entity$addResource("firmsDomainName", firmsDomainName)
 	entity$addResource("result", result)
 	entity$addResource("result_old", result_old)
@@ -251,4 +250,15 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	setwd("..")
 	entity$data$features = result
 
+	#UPLOAD TO GEOSERVER (if REVIEW)
+	#--------------------------------------------------------------------------------------------------
+	GS = config$software$output$geoserver
+	if(IS_REVIEW){
+	  GS$uploadShapefile(
+	    ws = "fifao", ds = "fifao_shapefiles", 
+	    endpoint = "file", configure = "first", update = "overwrite",
+	    filename = file.path("data", entity$data$uploadSource[[1]])
+	  )
+	}
+	
 }
