@@ -61,7 +61,7 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 		new_records$x <- NULL
 		new_records$y <- NULL
 		new_records$FACTSHEET <- sprintf('%s/fishery/firms/%s/%s', HOST, firmsDomain, new_records$INV_OBS_ID)
-		new_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, new_records$INV_OBS_ID)
+		new_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, new_records$FIGIS_ID)
 		new_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_new_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(new_records, file.path("reports", new_records_filename))
 		new_records_rep <- new_records
@@ -90,7 +90,7 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	if(nrow(updated_records)>0){
 		updated_records$geometry <- NULL
 		updated_records$FACTSHEET <- sprintf('%s/fishery/firms/%s/%s', HOST, firmsDomain, updated_records$INV_OBS_ID)
-		updated_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, updated_records$INV_OBS_ID)
+		updated_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, updated_records$FIGIS_ID)
 		updated_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_updated_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(updated_records, file.path("reports", updated_records_filename))
 		updated_records_rep <- updated_records
