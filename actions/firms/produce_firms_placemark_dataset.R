@@ -255,8 +255,8 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	GS = config$software$output$geoserver
 	if(IS_REVIEW){
 	  GS$uploadShapefile(
-	    ws = "fifao", ds = "fifao_shapefiles", 
-	    endpoint = "file", configure = "first", update = "overwrite",
+	    ws = "firms", ds = "firms_shapefiles", 
+	    endpoint = "file", configure = "none", update = "overwrite",
 	    filename = file.path("data", entity$data$uploadSource[[1]])
 	  )
 	}
