@@ -85,7 +85,7 @@ fao_n<-subset(fao_n,select=-c(country_id))
 fao_n<- fao_n[,c("country_and_territory", "georegion", "species","water_area","measurement_value","water_area_type","year","measurement_status")]
 
 #Data filter
-fao_n <- subset(fao_n, measurement_value != 0)
+#fao_n <- subset(fao_n, measurement_value != 0)
 fao_n$year<-as.integer(fao_n$year)
 
 fao_n$measurement<-"catch"
