@@ -4,11 +4,11 @@
 	"project": "FIRMS-viewer",
 	"organization": "FIRMS",
 	"logos": [
-		"http://firms.fao.org/figis/website/assets/images/templates/firms/firms_banner.gif",
+		"https://github.com/eblondel/geoflow-geoinfo/blob/main/thumbnails/firms.png?raw=true",
   		"https://www.fao.org/figis/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
 	],
 	"environment": {
-  		"file": "envs/geoinfo-review.env",
+  		"file": "envs/geoinfo.env",
   		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
   	}
   },
@@ -79,6 +79,31 @@
 		"id": "produce_firms_placemark_dataset",
 		"script": "../actions/firms/produce_firms_placemark_dataset.R",
 		"run": true
+	},
+	{
+    "id": "geometa-create-iso-19115",
+    "run": true,
+	  "options": {
+		  "logo": true
+	  }
+  },
+	{
+    "id": "geometa-create-iso-19110",
+    "run": true,
+	  "options": {
+		  "exclude_values_for_attributes" : ["DOMAIN", "FIGIS_ID", "LANG", "TITLE", "SURFACE"]
+	  }
+  },
+	{
+	  "id": "geonapi-publish-iso-19139",
+	  "run": true
+	},
+	{
+	  "id": "geosapi-publish-ogc-services",
+	  "run": true,
+	  "options": {
+		  "createStore": true
+	  }
 	},
 	{
 	  "id": "notify_firms_secretariat",

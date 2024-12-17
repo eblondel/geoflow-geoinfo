@@ -60,7 +60,7 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	if(nrow(new_records)>0){
 		new_records$x <- NULL
 		new_records$y <- NULL
-		new_records$FACTSHEET <- sprintf('%s/fishery/firms/%s/%s', HOST, firmsDomain, new_records$INV_OBS_ID)
+		new_records$FACTSHEET <- sprintf('%s/firms/%s/%s', ifelse(HOST=="https://www.fao.org", "https://firms.fao.org", HOST), firmsDomain, new_records$INV_OBS_ID)
 		new_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, new_records$FIGIS_ID)
 		new_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_new_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(new_records, file.path("reports", new_records_filename))
@@ -89,7 +89,7 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 	updated_records_filename <- NULL
 	if(nrow(updated_records)>0){
 		updated_records$geometry <- NULL
-		updated_records$FACTSHEET <- sprintf('%s/fishery/firms/%s/%s', HOST, firmsDomain, updated_records$INV_OBS_ID)
+		updated_records$FACTSHEET <- sprintf('%s/firms/%s/%s', ifelse(HOST=="https://www.fao.org", "https://firms.fao.org", HOST), firmsDomain, updated_records$INV_OBS_ID)
 		updated_records$VIEWER <- sprintf('%s/fishery/geoserver/factsheets/firms.html?layer=%s&feat=%s', HOST, firmsDomain, updated_records$FIGIS_ID)
 		updated_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_updated_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(updated_records, file.path("reports", updated_records_filename))
@@ -121,7 +121,7 @@ produce_firms_placemark_dataset <- function(action, entity, config){
 		deleted_records$gml_id <- NULL
 		deleted_records$geometry <- NULL
 		deleted_records$the_geom <- NULL
-		deleted_records$FACTSHEET <- sprintf('%s/firms/%s/%s/%s', if(IS_REVIEW) {"https://figisapps.fao.org"}else{"https://firms.fao.org"}, firmsDomain, deleted_records$OLD_ID, deleted_records$LANG) #TODO refactor once migration finished
+		deleted_records$FACTSHEET <- "-" 
 		deleted_records$VIEWER <- "-"
 		deleted_records_filename <- sprintf("FIRMS_MapViewer_%s_%s_deleted_records_%s.xlsx", if(IS_REVIEW) "REVIEW" else "PROD", firmsDomainName, Sys.Date())
 		writexl::write_xlsx(deleted_records, file.path("reports", deleted_records_filename))

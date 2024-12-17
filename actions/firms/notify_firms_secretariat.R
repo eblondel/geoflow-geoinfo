@@ -14,12 +14,12 @@ notify_firms_secretariat <- function(action, entity, config){
 	}
 	
 	email <- blastula::compose_email(
-        header = md("<a href=\"http://firms.fao.org\"><img src=\"http://firms.fao.org/figis/website/assets/images/templates/firms/firms_banner.gif\" height=54 width=800/></a>"), 
+        header = md("<a href=\"https://firms.fao.org\"><img src=\"https://github.com/eblondel/geoflow-geoinfo/blob/main/thumbnails/firms.png?raw=true\" height=54 width=700/></a>"), 
         body = md(glue::glue(
             "
 Dear FIRMS team member,
 
-The FIRMS stocks & fisheries map viewer **{ifelse(entity$resources$is_review, '(IN REVIEW)', '')}** has been updated with a new **{entity$resources$firmsDomainName}** dataset.
+The FIRMS stocks & fisheries map viewer{ifelse(entity$resources$is_review, ' **(IN REVIEW)**', '')} has been updated with a new **{entity$resources$firmsDomainName}** dataset.
 
 The new dataset (as of {Sys.Date()}) can be browsed in the [FIRMS stocks & fisheries map viewer]({entity$resources$host}/fishery/geoserver/factsheets/firms.html?layer={entity$resources$firmsDomain}). 
 
@@ -114,8 +114,10 @@ Report automatically generated on {Sys.time()} by the FIRMS map viewer workflow
 	  from = c("FIRMS Stocks & Fisheries map viewer" = "firms.viewer@gmail.com"),
 	  to = c("FIRMS Secretariat" = "firms-secretariat@fao.org"),
 	  bcc = c(
-	  	"emmanuel.blondel@fao.org","aureliano.gentile@fao.org", "bracken.vanniekerk@fao.org", "marc.taconet@fao.org",
-	  	"kiran.viparthi@fao.org", "anton.ellenbroek@fao.org", "yann.laurent@fao.org", "james.geehan@fao.org"
+	    "marc.taconet@fao.org", "aureliano.gentile@fao.org", "kiran.viparthi@fao.org",
+	    "bracken.vanniekerk@fao.org", "arturoalbero@gmail.com", "anne.nieblas@fao.org",
+	    "emmanuel.blondel@fao.org", "anton.ellenbroek@fao.org", "yann.laurent@fao.org", 
+	    "james.geehan@fao.org", "stefania.vannuccini@fao.org"
 	  ),
 	  subject = sprintf("FIRMS stocks & fisheries map viewer update (%s) - %s dataset", Sys.Date(), entity$resources$firmsDomainName),
 	  credentials = SMTP
