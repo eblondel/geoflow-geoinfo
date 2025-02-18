@@ -22,7 +22,7 @@ function(action, entity, config){
     filter(`Last modified`!="")%>%
     mutate(Dataset=sub("_[^_]+$", "",Name))%>%
     filter(Dataset== "Capture")%>%
-    mutate(`Last modified`=as.POSIXct(`Last modified`,format="%d-%b-%Y %H:%M"))%>%
+    mutate(`Last modified`=as.POSIXct(`Last modified`,format="%Y-%m-%d %H:%M"))%>%
     group_by(Dataset)%>%
     filter(`Last modified`==max(`Last modified`))%>%
     mutate(link=file.path(url,Name))
