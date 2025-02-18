@@ -82,7 +82,8 @@
   		  "createWorkspace": true,
   		  "createStore": true,
   		  "overwrite": true,
-  		  "describe_wms_relation_with_category": false,
+  		  "enrich_with_relation_wfs_download_links": true,
+  		  "describe_wms_relation_with_category": true,
         "describe_wms_relation_with_ogc_service_description" : false
   	  }
 	  }
