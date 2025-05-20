@@ -44,7 +44,7 @@ type_register <- function(config){
   return(out)
 }
 
-sdg_flag <- function(config){
+sdg_flag_register <- function(config){
   data = googledrive::drive_download(googledrive::drive_find("grsf_resource_placemarks.gpkg")$id, overwrite = TRUE)
   sp = sf::st_read(data$name)
   out <- data.frame(
