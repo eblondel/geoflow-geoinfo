@@ -5,11 +5,15 @@
 	"organization": "GRSF",
 	"logos": [],
 	"environment": {
-  		"file": "envs/sdilab_admin.env",
+  		"file": "envs/geoinfo.env",
   		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
-  	}
+  	},
+    "mode": "entity",
+    "options": {
+      "skipEnrichWithDataSubjects": true
+    }
   },
-  "mode": "entity",
+
   "metadata": {
     "entities": [{
       "handler": "gsheet",
