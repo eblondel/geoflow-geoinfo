@@ -3,8 +3,8 @@
 		"id": "fsa-workflow",
 		"mode": "entity",
 		"logos": [
-  		"http://firms.fao.org/figis/website/assets/images/templates/firms/firms_banner.gif",
-    	"https://www.fao.org/figis/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
+    	"https://www.fao.org/fishery/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png",
+    	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
   	],
 		"environment": {
 			"file": "envs/geoinfo.env",
