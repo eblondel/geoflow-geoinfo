@@ -84,9 +84,10 @@
     "id": "geometa-create-iso-19115",
     "run": true,
 	  "options": {
-		  "logo": true
+		  "logo": true,
+		  "include_object_identification_ids": true
 	  }
-  },
+	},
 	{
     "id": "geometa-create-iso-19110",
     "run": true,
