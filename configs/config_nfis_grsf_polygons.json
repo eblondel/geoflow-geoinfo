@@ -1,0 +1,58 @@
+{
+  "id": "grsf",
+  "profile": {
+	  "project": "GRSF",
+	  "organization": "GRSF",
+	  "logos": [],
+	  "environment": {
+  		"file": "envs/sdilab_admin.env",
+  		"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+    	}
+    },
+  "mode": "entity",
+  "metadata": {
+    "entities": [{
+      "handler": "gsheet",
+      "source": "https://docs.google.com/spreadsheets/d/15Z-9NYNSmfeB5dCBDuma7ZMrWYmCWsIUz-VXQMWbk5s/edit?gid=1443417782#gid=1443417782"
+    }],
+	"contacts" : [{
+      "handler": "gsheet",
+      "source": "https://docs.google.com/spreadsheets/d/15Z-9NYNSmfeB5dCBDuma7ZMrWYmCWsIUz-VXQMWbk5s/edit?gid=504815837"
+    }]
+  },
+  "software": [
+	{
+		"id": "fao-nfi-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "INFO"
+		},
+		"properties" : {
+			"workspace": "grsf"
+		}
+	},
+	{
+		"id": "googledrive",
+		"type": "input",
+		"software_type": "googledrive",
+		"parameters": {
+			"email": "{{GDRIVE_FISHERIESATLAS_EMAIL}}",
+			"token": "{{GDRIVE_FISHERIESATLAS_TOKEN}}"
+		},
+		"properties" : {}
+	}
+  ],
+  "actions": [
+	{
+	  "id": "geosapi-publish-ogc-services",
+	  "run": true,
+	  "options": {
+		"createStore": true
+	  }
+	}
+  ]
+}
