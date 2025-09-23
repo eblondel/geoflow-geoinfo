@@ -20,7 +20,7 @@
   "actions": [
 	{
 		"id": "grsf-action-entity-to-vocabulary",
-		"script": "actions/grsf/grsf_action_entity_to_vocabulary.R",
+		"script": "../actions/grsf/grsf_action_entity_to_vocabulary.R",
 		"run": true
 	}
   ]
