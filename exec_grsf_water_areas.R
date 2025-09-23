@@ -65,8 +65,8 @@ sf::st_write(all_features_simplified, "all_areas_simplified.gpkg")
 zip(zipfile = 'all_areas_simplified.zip', files = 'all_areas_simplified.gpkg')
 sf::st_write(features_to_publish_simplified, "all_areas_publishable_simplified.gpkg")
 zip(zipfile = 'all_areas_publishable_simplified.zip', files = 'all_areas_publishable_simplified.gpkg')
-sf::st_write(features_to_publish_simplified_sfp, "all_areas_publishable_simplified_sfp.gpkg")
-zip(zipfile = 'all_areas_publishable_simplified_sfp.zip', files = 'all_areas_publishable_simplified_sfp.gpkg')
+#sf::st_write(features_to_publish_simplified_sfp, "all_areas_publishable_simplified_sfp.gpkg")
+#zip(zipfile = 'all_areas_publishable_simplified_sfp.zip', files = 'all_areas_publishable_simplified_sfp.gpkg')
 setwd(wd)
 
 jobdir = executeWorkflow("configs/config_nfis_grsf_adb_gpkg.json")
@@ -86,15 +86,3 @@ jobdir = executeWorkflow("configs/config_nfis_grsf_placemarks.json")
 #execute workflow for publication of polygons GPKGs
 jobdir = executeWorkflow("configs/config_nfis_grsf_polygons.json")
 
-#Debug workflow
-#DEBUG = debugWorkflow("config_nfis_grsf_polygons.json")
-#closeWorkflow(DEBUG$config)
-
-#EXECUTE WORKFLOW FOR PLACEMARKS
-#workflow for publishing the centroids of all GRSF records
-
-#Check size of polygons
-grsf_fisheries_gpkg <- sf::st_read("C:/Users/artur/OneDrive/Documents/GitHub/water_areas_geoflow/jobs/20250516233227/entities/grsf_fishery_polygons/data/grsf_fishery_polygons.gpkg")
-grsf_resources_gpkg <- sf::st_read("C:/Users/artur/OneDrive/Documents/GitHub/water_areas_geoflow/jobs/20250516233227/entities/grsf_resource_polygons/data/grsf_resource_polygons.gpkg")
-grsf_fisheries_gpkg$size = sapply(1:nrow(grsf_fisheries_gpkg, function(i){as.numeric(object.size(grsf_fisheries_gpkg[i,]))/1e6}))
-grsf_resources_gpkg$size = sapply(1:nrow(grsf_resources_gpkg, function(i){as.numeric(object.size(grsf_resources_gpkg[i,]))/1e6}))
