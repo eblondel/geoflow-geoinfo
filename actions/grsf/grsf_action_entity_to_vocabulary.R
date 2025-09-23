@@ -224,8 +224,9 @@ function(action, entity, config){
     grsf_creation = grsf_creation,
     grsf_sourceoftruth = grsf_sourceoftruth,
     grsf_licence = grsf_licence,
-    publishable_fao = publishable,
-    publishable_sfp = ifelse(grepl("cc", license, ignore.case = TRUE), "yes", publishable), #SFP field
+    publishable = publishable,
+    #publishable_fao = publishable,
+    #publishable_sfp = ifelse(grepl("cc", license, ignore.case = TRUE), "yes", publishable), #SFP field
     source_link = source_link,
     useLimitation = useLimitation,
     terms_of_use = useConstraint,

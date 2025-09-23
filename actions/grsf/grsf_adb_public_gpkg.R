@@ -34,11 +34,11 @@ st_geometry(all_features_simplified) <- "geom"
 
 # Publishable features keeping original geometry
 all_features_simplified_publishable <- all_features_simplified %>%
-  filter(publishable_fao == "yes")
+  filter(publishable == "yes")
 
 # For non-publishable: replace geometry with its bounding box
 bbox_geometries <- all_features_simplified %>%
-  filter(publishable_fao == "no") %>%
+  filter(publishable == "no") %>%
   pull(geom) %>%
   map(~ st_as_sfc(st_bbox(.x))[[1]])
 
@@ -47,7 +47,7 @@ bbox_sfc <- st_sfc(bbox_geometries, crs = st_crs(all_features_simplified))
 
 # Reconstruct the non-publishable sf object
 all_features_simplified_non_publishable <- all_features_simplified %>%
-  filter(publishable_fao == "no") %>%
+  filter(publishable == "no") %>%
   st_drop_geometry() %>%  # Remove original geom column
   mutate(geom = bbox_sfc) %>%
   st_as_sf()

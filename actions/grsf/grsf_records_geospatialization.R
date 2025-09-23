@@ -351,7 +351,7 @@ extract_combine_polygons_and_outputs <- function(area_codes, all_features) {
   centroid_wkt <- st_as_text(centroid)
 
   # Determine publishability
-  publishable_fao <- ifelse(any(filtered_data$publishable_fao == "no"), "no", "yes")
+  publishable <- ifelse(any(filtered_data$publishable == "no"), "no", "yes")
 
   # Calculate bounding box for the combined geometry
   bbox_wkt <- tryCatch({
@@ -373,14 +373,14 @@ extract_combine_polygons_and_outputs <- function(area_codes, all_features) {
   return(list(multipolygon = st_sf(geometry = combined_multipolygon),
               wkt = combined_multipolygon_wkt,
               centroid_wkt = centroid_wkt,
-              publishable_fao = publishable_fao,
+              publishable = publishable,
               bbox_wkt = bbox_wkt))
 }
 
 results <- mapply(extract_combine_polygons_and_outputs, strsplit(grsf_records$record_area, ";"), list(all_features), SIMPLIFY = FALSE)
 
 grsf_records$bbox_wkt <- sapply(results, function(x) x$bbox_wkt)
-grsf_records$publishable_fao <- sapply(results, function(x) x$publishable_fao)
+grsf_records$publishable <- sapply(results, function(x) x$publishable)
 grsf_records$geo_polygon <- lapply(results, function(x) x$multipolygon)
 grsf_records$geo_polygon_wkt <- sapply(results, function(x) x$wkt)
 grsf_records$centroid <- sapply(results, function(x) x$centroid_wkt)
@@ -452,7 +452,7 @@ st_write(grsf_approved_records_sf_centroid, file.path(getwd(), "data", paste0(en
 googledrive::drive_upload(file.path(getwd(), "data", paste0(entity$identifiers$id, "_placemarks", ".gpkg")), path = googledrive::as_dribble("fisheriesatlas/grsf/data"), overwrite = TRUE)
 
 
-# Create SF object for non publishable_fao (bbox)
+# Create SF object for non publishable (bbox)
 # Function to check if a geometry is valid
 is_valid_geometry <- function(wkt) {
   tryCatch({
@@ -468,7 +468,7 @@ valid_geometries <- sapply(grsf_records$bbox_wkt, is_valid_geometry)
 
 
 # Filter out invalid geometries
-valid_indices <- grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 & grsf_records$publishable_fao == "no" & valid_geometries
+valid_indices <- grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 & grsf_records$publishable == "no" & valid_geometries
 grsf_approved_records_sf_bbox <- sf::st_sf(
   uuid = grsf_records[valid_indices, ]$uuid,
   url = paste0("https://i-marine.d4science.org/group/grsf/data-catalogue?path=/dataset/", grsf_records[valid_indices, ]$uuid),
@@ -518,49 +518,49 @@ if ("management_entities" %in% colnames(grsf_records)) {
 st_crs(grsf_approved_records_sf_bbox) = 4326
 
 
-# SF object for publishable_fao (polygon)
+# SF object for publishable (polygon)
 grsf_approved_records_sf_polygons = sf::st_sf(
-  uuid = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$uuid,
-  url = paste0("https://i-marine.d4science.org/group/grsf/data-catalogue?path=/dataset/", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$uuid),
-  grsf_semantic_id = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$grsf_semantic_id,
-  short_name = gsub("&", "and", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$short_name),
-  grsf_name = gsub("&", "and", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$grsf_name),
-  type = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$type,
-  #traceability_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$traceability_flag,
-  #sdg_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$sdg_flag,
-  geom = st_as_sfc(grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$geo_polygon_wkt)
+  uuid = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$uuid,
+  url = paste0("https://i-marine.d4science.org/group/grsf/data-catalogue?path=/dataset/", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$uuid),
+  grsf_semantic_id = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$grsf_semantic_id,
+  short_name = gsub("&", "and", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$short_name),
+  grsf_name = gsub("&", "and", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$grsf_name),
+  type = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$type,
+  #traceability_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$traceability_flag,
+  #sdg_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$sdg_flag,
+  geom = st_as_sfc(grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$geo_polygon_wkt)
 )
 
 #Add resource attributes if applicable:
 
   if ("sdg_flag" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$sdg_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$sdg_flag
+    grsf_approved_records_sf_polygons$sdg_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$sdg_flag
   }
 
 #Add fishery attributes if applicable:
 
   if ("traceability_flag" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$traceability_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$traceability_flag
+    grsf_approved_records_sf_polygons$traceability_flag = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$traceability_flag
   }
 
   if ("gear_code" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$gear_code = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$gear_code
+    grsf_approved_records_sf_polygons$gear_code = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$gear_code
   }
 
   if ("gear_type" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$gear_type = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$gear_type
+    grsf_approved_records_sf_polygons$gear_type = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$gear_type
   }
 
   if ("flag_code" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$flag_code = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$flag_code
+    grsf_approved_records_sf_polygons$flag_code = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$flag_code
   }
 
   if ("flag_type" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$flag_type = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$flag_type
+    grsf_approved_records_sf_polygons$flag_type = grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$flag_type
   }
 
   if ("management_entities" %in% colnames(grsf_records)) {
-    grsf_approved_records_sf_polygons$management_entity = gsub("&", "and", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable_fao == "yes", ]$management_entities)
+    grsf_approved_records_sf_polygons$management_entity = gsub("&", "and", grsf_records[grsf_records$status == "approved" & lengths(grsf_records$centroid) > 0 &  grsf_records$publishable == "yes", ]$management_entities)
   }
 
 #Set CRS
