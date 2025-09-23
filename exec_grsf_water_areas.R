@@ -26,17 +26,17 @@ for(area_file in area_files){
 #all areas?
 all_areas = do.call("rbind", lapply(area_files, function(x){readr::read_csv(x)}))
 readr::write_csv(all_areas, "all_areas.csv")
-all_areas_publishable = all_areas[all_areas$publishable_fao == 'yes',]
+all_areas_publishable = all_areas[all_areas$publishable == 'yes',]
 readr::write_csv(all_areas_publishable, "all_areas_publishable.csv")
-all_areas_publishable_sfp = all_areas[all_areas$publishable_sfp == 'yes',]
-readr::write_csv(all_areas_publishable_sfp, "all_areas_publishable_sfp.csv")
+#all_areas_publishable_sfp = all_areas[all_areas$publishable_sfp == 'yes',]
+#readr::write_csv(all_areas_publishable_sfp, "all_areas_publishable_sfp.csv")
 #unique(all_areas$namespace)
 #all_areas[is.na(all_areas$namespace),]
 setwd(wd)
 #Summary of publishable areas
-legal_flags <- unique(all_areas[,c("namespace","system_owner_code","publishable_fao","publishable_sfp","grsf_sourceoftruth","grsf_creation","grsf_licence","source_link","useLimitation")])
-legal_flags_summary <- c(PUBLISHABLE = nrow(subset(legal_flags, publishable_fao == "yes")),
-                         NON.PUBLISHABLE = nrow(subset(legal_flags, publishable_fao == "no")) + nrow(subset(legal_flags, is.na(publishable_fao))))
+legal_flags <- unique(all_areas[,c("namespace","system_owner_code","publishable","grsf_sourceoftruth","grsf_creation","grsf_licence","source_link","useLimitation")])
+legal_flags_summary <- c(PUBLISHABLE = nrow(subset(legal_flags, publishable == "yes")),
+                         NON.PUBLISHABLE = nrow(subset(legal_flags, publishable == "no")) + nrow(subset(legal_flags, is.na(publishable))))
 readr::write_csv(legal_flags,"legal_flags.csv")
 
 
@@ -50,16 +50,16 @@ setwd(wd)
 
 #one single geopackage
 all_features = do.call("rbind", lapply(gpkgs, function(x){sf::st_read(x)}))
-features_to_publish = all_features[all_features$publishable_fao == 'yes',]
-features_to_publish_sfp = all_features[all_features$publishable_sfp == 'yes',]
+features_to_publish = all_features[all_features$publishable == 'yes',]
+#features_to_publish_sfp = all_features[all_features$publishable_sfp == 'yes',]
 all_features_simplified = sf::st_simplify(all_features, dTolerance = 0.005)
-features_to_publish_simplified = all_features_simplified[all_features_simplified$publishable_fao == 'yes',]
-features_to_publish_simplified_sfp = all_features_simplified[all_features_simplified$publishable_sfp == 'yes',]
+features_to_publish_simplified = all_features_simplified[all_features_simplified$publishable == 'yes',]
+#features_to_publish_simplified_sfp = all_features_simplified[all_features_simplified$publishable_sfp == 'yes',]
 setwd("C:/Users/artur/OneDrive/Documents/GitHub/water_areas_shapefiles")
 sf::st_write(all_features, "all_areas.gpkg")
 zip(zipfile = 'all_areas.zip', files = 'all_areas.gpkg')
 sf::st_write(features_to_publish, "all_areas_publishable.gpkg")
-sf::st_write(features_to_publish_sfp, "all_areas_publishable_sfp.gpkg")
+#sf::st_write(features_to_publish_sfp, "all_areas_publishable_sfp.gpkg")
 zip(zipfile = 'all_areas_publishable.zip', files = 'all_areas_publishable.gpkg')
 sf::st_write(all_features_simplified, "all_areas_simplified.gpkg")
 zip(zipfile = 'all_areas_simplified.zip', files = 'all_areas_simplified.gpkg')
