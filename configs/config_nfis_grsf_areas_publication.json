@@ -64,14 +64,38 @@
 			"token": "{{GDRIVE_FISHERIESATLAS_TOKEN}}"
 		},
 		"properties" : {}
+	},
+	{
+		"id": "zenodo",
+	  "type": "output",
+	  "software_type": "zenodo",
+	  "parameters": {
+  		"url": "https://zenodo.org/api",
+  		"token": "{{ ZENODO_TOKEN }}",
+  		"logger": "DEBUG"
+	  }
 	}
   ],
   "actions": [
-	{
+  {
+	  "id": "zen4R-deposit-record",
+	  "run": true,
+	  "options": {
+		  "zipEachDataFile": false
+	  }
+	},
+  {
+		"id": "grsf_areas_changelog",
+		"script": "../actions/grsf/grsf_areas_changelog.R",
+		"run": true
+  },
+  {
     "id": "geometa-create-iso-19115",
     "run": true,
 	  "options": {
-		  "logo": true
+		  "logo": true,
+		  "doi": true,
+		  "include_object_identification_ids": true
 	  }
   },
 	{
