@@ -77,6 +77,12 @@ duplicates <- all_areas[duplicated(all_areas[, c("namespace", "area_code")]), ]
 View(duplicates)
 
 
+#########################################################################################
+
+
+# BEFORE RUNNING BELOW CONFIGS, THE SOURCE DATABASES (FIRMS, FISHSOURCE, RAM, SDG) NEED TO
+# ALIGN WITH THE NEW VERSION OF THE GRSF AREAS DATABASE (NEW CODES, ETC.)
+
 #execute workflow for creating GPKGs for Records and Fisheries and upload them to GoogleDrive
 jobdir = executeWorkflow("configs/config_nfis_grsf_gpkgs.json")
 
