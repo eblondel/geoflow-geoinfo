@@ -90,6 +90,11 @@
 		"run": true
   },
   {
+		"id": "grsf_areas_vocabulary_files",
+		"script": "../actions/grsf/grsf_areas_vocabulary_files.R",
+		"run": true
+  },
+  {
     "id": "geometa-create-iso-19115",
     "run": true,
 	  "options": {
