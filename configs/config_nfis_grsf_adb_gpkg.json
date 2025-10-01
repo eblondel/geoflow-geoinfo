@@ -35,7 +35,7 @@
   "actions": [
 	{
 	  "id": "grsf_adb_public_gpkg",
-	  "script" : "actions/grsf/grsf_adb_public_gpkg.R",
+	  "script" : "../actions/grsf/grsf_adb_public_gpkg.R",
 	  "run": true
 	}
   ]
