@@ -1,0 +1,91 @@
+{
+	"profile": {
+		"id": "fsa-workflow",
+		"mode": "entity",
+		"logos": [
+    	"https://www.fao.org/fishery/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png",
+    	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
+  	],
+		"environment": {
+			"file": "envs/geoinfo.env",
+			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+		}
+	},
+	"metadata": {
+	  "entities": [{
+		"handler": "handle_rfb_entities",
+		"script": "handlers/handler_nfi_rfbs.R"
+	  }],
+	  "contacts" : [{
+        "handler": "gsheet",
+        "source": "https://docs.google.com/spreadsheets/d/1nxl4n0v91PmlqAn2Z1ztRkGHmKzPbZmDu2ArpPQUknA/edit?gid=1863177437"
+      }]
+	},
+	"software": [
+	{
+		"id": "fifao_wfs",
+		"type": "input",
+		"software_type": "wfs",
+		"parameters": {
+			"url": "https://www.fao.org/fishery/geoserver/fifao/wfs",
+			"serviceVersion": "1.0.0",
+			"logger": "DEBUG"
+		}
+	},
+	{
+		"id": "nfi-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "INFO"
+		}
+	},
+	{
+		"id": "nfi-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "DEBUG"
+		},
+		"properties": {
+			"workspace": "fifao",
+			"store": "fifao_shapefiles"
+		}
+		
+	}
+	],
+	"actions": [
+	  {
+      "id": "geometa-create-iso-19115",
+      "run": true,
+  	  "options": {
+  	      "logo": true,
+  	      "include_object_identification_ids": true
+  	  }
+	  },
+	  {
+  	  "id": "geonapi-publish-iso-19139",
+  	  "run":true
+	  },
+	  {
+  	  "id": "geosapi-publish-ogc-services",
+  	  "run":true,
+  	  "options": {
+  		  "createWorkspace": true,
+  		  "createStore": true,
+  		  "overwrite": true,
+  		  "enrich_with_relation_wfs_download_links": true,
+  		  "describe_wms_relation_with_category": true,
+          "describe_wms_relation_with_ogc_service_description" : false
+  	    }
+	  }
+	  
+	]
+}
