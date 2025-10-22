@@ -11,22 +11,21 @@ handle_rfb_entities <- function(handler, source, config){
 	if(!require("sf")){
 		stop("sf package is required")
 	}
+	if(!require("fdi4R")){
+		remotes::install_github("fdiwg/fdi4R")
+		require("fdi4R")
+	}
 	
 	#software required for handling these entities
 	WFS <- config$software$input$wfs
 	if(is.null(WFS)) stop("RFB entities handler requires a WFS software to load RFB shapes")
 
-	
+	#query RFBs
 	rfb_url <- "https://www.fao.org/figis/monikerj/figismapdata?format=xml&callback=FigisMap.loadStaticMapData"
 	xml <- xmlParse(content(GET(rfb_url), "text"), encoding = "UTF-8")
 	rfbs <- getNodeSet(xml, "//rfb/rfb")
 
-
-	bbox_to_sf = function(xmin, ymin, xmax, ymax){
-		pts = matrix(c(xmin,ymin,xmin,ymax,xmax,ymax,xmax,ymin,xmin,ymin),ncol=2, byrow=TRUE)
-		poly = sf::st_sf(geom = sf::st_sfc(sf::st_polygon(list(pts)), crs = 4326))
-		return(poly)
-	}
+	#compile entities
 	entities = lapply(rfbs, function(rfb){
 		
 		rfb_name <- tolower(xmlGetAttr(rfb, "name"))
@@ -43,62 +42,10 @@ handle_rfb_entities <- function(handler, source, config){
 		rfb_sf <- WFS$getFeatures("fifao:RFB_COMP_CLIP", cql_filter = sprintf("RFB='%s'", toupper(rfb_name)))
 		sf::st_crs(rfb_sf) = 4326
 		
-		rfb_bbox <- sf::st_bbox(rfb_sf)
-		if(round(rfb_bbox[1]) == -180 && round(rfb_bbox[3]) == 180){
-			global_view <- bbox_to_sf(-180,-90,180,90)
-			atl_view <- bbox_to_sf(-65,-90,90,90)
-			if(!sf::st_intersects(atl_view, rfb_sf,sparse = F)[1,1]){
-				bboxMinX <- 0; bboxMaxX <- 0; bboxMinY <- 0; bboxMaxY <- 0
-				maxNegX <- -180; maxPosX <- 180;
-				for(i in 1:nrow(rfb_sf)){
-					rfb_poly <- rfb_sf[i,]
-					rfb_poly_bbox <- sf::st_bbox(rfb_poly)
-					minX <- rfb_poly_bbox[1]
-					maxX <- rfb_poly_bbox[3]
-					minY <- rfb_poly_bbox[2]
-					maxY <- rfb_poly_bbox[4]
-					if(i==1){
-						bboxMinX <- minX; bboxMaxX <- maxX; bboxMinY <- minY; bboxMaxY <- maxY
-					}else{
-						if (minX < bboxMinX) bboxMinX = minX;
-						if (minY < bboxMinY) bboxMinY = minY;
-						if (maxX > bboxMaxX) bboxMaxX = maxX;
-						if (maxY > bboxMaxY) bboxMaxY = maxY;
-					}
-					if (maxX > maxNegX & maxX < 0) maxNegX = maxX;
-					if (minX < maxPosX & minX > 0) maxPosX = minX;
-				}
-				
-				#final bbox adjustment
-				#in case maxNegX & maxPosX unchanged
-				if (maxNegX == -180) maxNegX = -90;
-				if (maxPosX == 180) maxPosX = 90;
-
-				#for date-limit geographic distributions
-				if (maxNegX < -65 && maxPosX > 90) {
-					bboxMinX = maxPosX;
-					bboxMaxX = 360 - abs(maxNegX);
-				}
-
-				#control for globally distributed layers
-				if (bboxMinX < -175.0 && bboxMaxX > 175.0) {
-					bboxMinX = -180.0;
-					bboxMaxX = 180.0;
-					bboxMinY = -90.0;
-					bboxMaxY = 90.0;
-				}
-
-				#control for overlimit latitude
-				if (bboxMinY < -90) bboxMinY = -90;
-				if (bboxMaxY > 90) bboxMaxY = 90;
-				
-				#optimized bbox
-				rfb_bbox <- list(xmin = bboxMinX, xmax = bboxMaxX, ymin = bboxMinY, ymax = bboxMaxY)
-			}
-		}
-		
-		rfb_center <- sf::st_point_on_surface(bbox_to_sf(xmin = rfb_bbox$xmin, xmax = rfb_bbox$xmax, ymin = rfb_bbox$ymin, ymax = rfb_bbox$ymax))
-		bbox_string <- paste0(unlist(rfb_bbox),collapse=",")
+		rfb_bbox = fdi4R::optimize_bbox(rfb_sf)
+		rfb_bbox_sf = fdi4R::bbox_to_sf(xmin = rfb_bbox[1], ymin = rfb_bbox[2], xmax = rfb_bbox[3], ymax = rfb_bbox[4])
+		rfb_center <- sf::st_point_on_surface(rfb_bbox_sf)
+		bbox_string <- paste0(c(rfb_bbox$xmin,rfb_bbox$xmax,rfb_bbox$ymin,rfb_bbox$ymax),collapse=",")
 		bbox_center <- paste(sf::st_coordinates(rfb_center), collapse=",")
 		
 		#links
@@ -156,12 +103,7 @@ handle_rfb_entities <- function(handler, source, config){
 		rfb_entity$addSubject(inspire_subj)
 		
 		#extents
-		wkt <- sf::st_as_text(bbox_to_sf(
-			xmin = rfb_bbox$xmin,
-			ymin = rfb_bbox$ymin,
-			xmax = rfb_bbox$xmax,
-			ymax = rfb_bbox$ymax
-		)$geom)
+		wkt <- sf::st_as_text(rfb_bbox_sf$geom)
 		rfb_entity$setSpatialExtent(wkt, crs = 4326)
 		#srid
 		rfb_entity$setSrid(4326)
@@ -171,7 +113,7 @@ handle_rfb_entities <- function(handler, source, config){
 		thumbnail <- geoflow_relation$new()
 		thumbnail$setKey("thumbnail")
 		thumbnail$setDescription("Map Overview")
-		thumbnail$setLink(paste0("https://",domain,"/fishery/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=fifao:UN_CONTINENT2,rfb:",layerName,"&bbox=",paste(c(rfb_bbox$xmin,rfb_bbox$ymin,rfb_bbox$xmax,rfb_bbox$ymax), collapse=","),"&width=600&height=300&srs=EPSG:4326&format=image%2Fpng"))
+		thumbnail$setLink(paste0("https://",domain,"/fishery/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=fifao:UN_CONTINENT2,rfb:",layerName,"&bbox=",paste(rfb_bbox, collapse=","),"&width=600&height=300&srs=EPSG:4326&format=image%2Fpng"))
 		rfb_entity$addRelation(thumbnail)
 		
 		RFB_FIGIS <- geoflow_relation$new()
