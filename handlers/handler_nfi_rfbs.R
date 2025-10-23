@@ -45,7 +45,7 @@ handle_rfb_entities <- function(handler, source, config){
 		rfb_bbox = fdi4R::optimize_bbox(rfb_sf)
 		rfb_bbox_sf = fdi4R::bbox_to_sf(xmin = rfb_bbox[1], ymin = rfb_bbox[2], xmax = rfb_bbox[3], ymax = rfb_bbox[4])
 		rfb_center <- sf::st_point_on_surface(rfb_bbox_sf)
-		bbox_string <- paste0(c(rfb_bbox$xmin,rfb_bbox$xmax,rfb_bbox$ymin,rfb_bbox$ymax),collapse=",")
+		bbox_string <- paste0(c(rfb_bbox[1],rfb_bbox[3],rfb_bbox[2],rfb_bbox[4]),collapse=",")
 		bbox_center <- paste(sf::st_coordinates(rfb_center), collapse=",")
 		
 		#links
@@ -116,11 +116,11 @@ handle_rfb_entities <- function(handler, source, config){
 		thumbnail$setLink(paste0("https://",domain,"/fishery/geoserver/wms?service=WMS&version=1.1.0&request=GetMap&layers=fifao:UN_CONTINENT2,rfb:",layerName,"&bbox=",paste(rfb_bbox, collapse=","),"&width=600&height=300&srs=EPSG:4326&format=image%2Fpng"))
 		rfb_entity$addRelation(thumbnail)
 		
-		RFB_FIGIS <- geoflow_relation$new()
-		RFB_FIGIS$setKey("http")
-		RFB_FIGIS$setDescription("FAO Regional Fishery Bodies")
-		RFB_FIGIS$setLink(sprintf("https://%s/fishery/collection/organization",domain))
-		rfb_entity$addRelation(RFB_FIGIS)
+		RFB_NFI <- geoflow_relation$new()
+		RFB_NFI$setKey("http")
+		RFB_NFI$setDescription("FAO Regional Fishery Bodies")
+		RFB_NFI$setLink(sprintf("https://%s/fishery/collection/organization",domain))
+		rfb_entity$addRelation(RFB_NFI)
 		
 		RFB_FS <- geoflow_relation$new()
 		RFB_FS$setKey("http")
@@ -138,22 +138,24 @@ handle_rfb_entities <- function(handler, source, config){
 		useLim1 <- geoflow_right$new()
 		useLim1$setKey("use"); useLim1$setValues("The terms and conditions are available at https://www.fao.org/contact-us/terms/en")
 		rfb_entity$addRight(useLim1);
+		
 		useLim2 <- geoflow_right$new()
-		
-			
-		lic = geoflow_right$new()
-		lic$setKey("license");lic$setValues("cc-by-4.0")
-		
 		rfb_citation <- sprintf("Usage subject to mandatory citation: © FAO, %s. FAO Regional Fishery Bodies. %s. In: FAO Fisheries and Aquaculture Division [online]. Accessed on <DD Month YYYY>. %s License: CC-BY 4.0",
 						format(Sys.Date(), "%Y"), rfb_title, rfb_md_link_html)
 		useLim2$setKey("use"); useLim2$setValues(rfb_citation)
 		rfb_entity$addRight(useLim2);
+		
 		useLim3 <- geoflow_right$new()
-		useLim3$setKey("use"); useLim3$setValues("This work is made available under the Creative Commons Attribution-4.0 International license (CC BY 4.0; https://creativecommons.org/licenses/by/4.0/legalcode.en). By using this database, you agree to be bound by the terms of this license and the FAO Statistical Database Terms of Use (https://www.fao.org/contact-us/terms/db-terms-of-use/en/)")
+		useLim3$setKey("use"); useLim3$setValues(sprintf("Use of web map (WMS) and feature (WFS) protocol in web-applications subject to mention of provenance (Metadata link: %s) and FAO map attribution.", rfb_md_link_html))
 		rfb_entity$addRight(useLim3)
+		
 		useLim4 <- geoflow_right$new()
-		useLim4$setKey("use"); useLim4$setValues("Disclaimer: The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area or concerning the delimitation of frontiers or boundaries.")
+		useLim4$setKey("use"); useLim4$setValues("This work is made available under the Creative Commons Attribution-4.0 International license (CC BY 4.0; https://creativecommons.org/licenses/by/4.0/legalcode.en). By using this database, you agree to be bound by the terms of this license and the FAO Statistical Database Terms of Use (https://www.fao.org/contact-us/terms/db-terms-of-use/en/)")
 		rfb_entity$addRight(useLim4)
+		
+		useLim5 <- geoflow_right$new()
+		useLim5$setKey("use"); useLim5$setValues("Disclaimer: The designations employed and the presentation of material in the map(s) are for illustration only and do not imply the expression of any opinion whatsoever on the part of FAO concerning the legal or constitutional status of any country, territory or sea area or concerning the delimitation of frontiers or boundaries.")
+		rfb_entity$addRight(useLim5)
 		useConst1 <- geoflow_right$new(); useConst1$setKey("useConstraint"); useConst1$setValues("license");
 		rfb_entity$addRight(useConst1)
 		
