@@ -25,6 +25,9 @@ handle_rfb_entities <- function(handler, source, config){
 	xml <- xmlParse(content(GET(rfb_url), "text"), encoding = "UTF-8")
 	rfbs <- getNodeSet(xml, "//rfb/rfb")
 
+	rfbs_to_exclude = "JOINTFISH"
+	rfbs = rfbs[sapply(rfbs, function(x){ !toupper(xmlGetAttr(x, "name")) %in% rfbs_to_exclude })]
+
 	#compile entities
 	entities = lapply(rfbs, function(rfb){
 		
@@ -161,8 +164,8 @@ handle_rfb_entities <- function(handler, source, config){
 		
 		#Data object
 		data_obj <- geoflow_data$new()
-		datasource <- "RFB_COMP_CLIP.zip"
-		attr(datasource, "uri") <- "data/rfb/RFB_COMP_CLIP.zip"
+		datasource <- "RFB_COMP_CLIP.txt" #fake, not needed just need a datasource here as we already filled in the entities
+		attr(datasource, "uri") <- "data/rfb/RFB_COMP_CLIP.txt"
 		data_obj$setSource(datasource)
 		data_obj$setSourceType("shp")
 		data_obj$setUpload(FALSE)

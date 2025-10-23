@@ -23,11 +23,11 @@
 	},
 	"software": [
 	{
-		"id": "fifao_wfs",
+		"id": "nfi_wfs",
 		"type": "input",
 		"software_type": "wfs",
 		"parameters": {
-			"url": "https://www.fao.org/fishery/geoserver/fifao/wfs",
+			"url": "https://www.fao.org/fishery/geoserver/wfs",
 			"serviceVersion": "1.0.0",
 			"logger": "DEBUG"
 		}
@@ -55,8 +55,8 @@
 			"logger": "DEBUG"
 		},
 		"properties": {
-			"workspace": "fifao",
-			"store": "fifao_shapefiles"
+			"workspace": "rfb",
+			"store": "rfb_shapefiles"
 		}
 		
 	}
