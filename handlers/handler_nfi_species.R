@@ -25,7 +25,7 @@ handle_species_entities <- function(handler, source, config){
 	species_url <- "https://www.fao.org/fishery/geoserver/factsheets/js/specieslist.xml"
 	xml <- xmlParse(content(GET(species_url), "text"), encoding = "UTF-8")
 	species_list <- getNodeSet(xml, "//item")
-
+	
 	#compile entities
 	entities = lapply(species_list, function(species){
 		
@@ -128,13 +128,13 @@ handle_species_entities <- function(handler, source, config){
 			worms_subj$addKeyword(aphiaID)
 			worms_subj$addKeyword(worms_record$lsid)
 			worms_subj$addKeyword(worms_record$scientificname)
-			worms_subj$addKeyword(worms_record$valid_AphiaID)
-			worms_subj$addKeyword(worms_record$valid_name)
+			if(!is.na(worms_record$valid_AphiaID)) worms_subj$addKeyword(worms_record$valid_AphiaID)
+			if(!is.na(worms_record$valid_name)) worms_subj$addKeyword(worms_record$valid_name)
 			worms_subj$addKeyword(worms_record$authority)
-			if(worms_record$isMarine == 1) worms_subj$addKeyword("marine")
-			if(worms_record$isBrackish == 1) worms_subj$addKeyword("brackish")
-			if(worms_record$isFreshwater == 1) worms_subj$addKeyword("freshwater")
-			if(worms_record$isTerrestrial == 1) worms_subj$addKeyword("terrestrial")
+			if(!is.na(worms_record$isMarine)) if(worms_record$isMarine == 1) worms_subj$addKeyword("marine")
+			if(!is.na(worms_record$isBrackish)) if(worms_record$isBrackish == 1) worms_subj$addKeyword("brackish")
+			if(!is.na(worms_record$isFreshwater)) if(worms_record$isFreshwater == 1) worms_subj$addKeyword("freshwater")
+			if(!is.na(worms_record$isTerrestrial)) if(worms_record$isTerrestrial == 1) worms_subj$addKeyword("terrestrial")
 			species_entity$addSubject(worms_subj)
 		}
 		
