@@ -49,7 +49,6 @@ function(action, entity, config){
   
   #Automatically create register.csv
   data_files <- list.files("data", pattern = "\\.gpkg$", full.names = FALSE)
-  
   if (length(data_files) > 0) {
     
     register_df <- do.call(rbind, lapply(data_files, function(x) {
@@ -138,5 +137,7 @@ function(action, entity, config){
     
     return(ext_data)
   })
-
+  
+  entity$data$dir = file.path(getwd(), "data") #make sure entity$data$data is used for geoserver (waiting for r-geoflow/geoflow#422)
+  
 }
