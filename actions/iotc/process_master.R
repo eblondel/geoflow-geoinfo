@@ -2,10 +2,6 @@ function(action, entity, config){
   
   #process iotc_stock_assessment_sa_master.gpkg
   layer_master = entity$data$features
-  #iotc_layer_master = st_read("./data/iotc/iotc_stock_assessment_sa_master.gpkg")
-  #iotc_layer_master_path = entity$data$source
-  #iotc_layer_master_path = "C:/Users/artur/OneDrive/Documents/GitHub/geoflow-geoinfo/data/iotc/iotc_stock_assessment_sa_master.gpkg"
-  #iotc_layer_master = st_read(iotc_layer_master_path)
   
   #Connect to WFS FAO Geoserver
   WFS = ows4R::WFSClient$new(
