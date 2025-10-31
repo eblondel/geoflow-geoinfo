@@ -11,9 +11,9 @@
 # @author eblondel
 # @date 2015/10/27
 #
-config$logger.info("============================================================================================")
-config$logger.info("MANAGE FAO areas datasets...")
-config$logger.info("============================================================================================")
+config$logger$INFO("============================================================================================")
+config$logger$INFO("MANAGE FAO areas datasets...")
+config$logger$INFO("============================================================================================")
 
 #packages
 #--------------------------------------------------------------------------------------------
@@ -187,14 +187,14 @@ manageFisheryStatAreas <- function(features){
 #main function to add fishery stat area names
 addFisheryStatAreaNames <- function(features, codelists){
 	fsa.labels <- do.call("rbind", lapply(codelists, function(codelist){
-		config$logger.info(sprintf("Current working directory: %s",getwd()))
+		config$logger$INFO(sprintf("Current working directory: %s",getwd()))
 		fsa.lab <- read.table(file.path(config$wd, "data/fsa", codelist), sep=",", h=TRUE)
 		fields <- c("Code", "Name_En", "Name_Fr", "Name_Es")
 		fsa.lab <- fsa.lab[,fields]
 		colnames(fsa.lab) <- toupper(fields)
 		return(fsa.lab)
 	}))
-	config$logger.info(sprintf("Successfuly read %s codelist tables", length(fsa.labels)))
+	config$logger$INFO(sprintf("Successfuly read %s codelist tables", length(fsa.labels)))
 	features$ID <- 1:nrow(features)
 	featData <- merge(features, fsa.labels, by.x = "F_CODE", by.y = "CODE", all.x = TRUE, all.y = FALSE)
 	featData <- featData[order(featData$ID),]
@@ -225,16 +225,16 @@ WFS <- config$software$input$wfs
 #read master data from the published source
 data.sf <- WFS$getFeatures("fifao:FAO_AREAS_MASTER")
 sf::st_crs(data.sf) = 4326
-if(!is.null(data.sf)) config$logger.info("Successful fetching of master file through WFS")
+if(!is.null(data.sf)) config$logger$INFO("Successful fetching of master file through WFS")
 
 # data <- as(data.sf, "Spatial")
 # 
 # #crop at North pole (-89.99 instead of -90) to avoid reprojection issues when exploiting the data
-# config$logger.info("Crop data to fit global WGS84 extent")
+# config$logger$INFO("Crop data to fit global WGS84 extent")
 # data <- raster::crop(data, raster::extent(-180,180,-89.99, 89.99))
 
 #compute and export 'FAO_AREAS'
-config$logger.info("Process master file (normalization)")
+config$logger$INFO("Process master file (normalization)")
 result <- manageFisheryStatAreas(data.sf)
 
 fao_area_31 = result[result$F_AREA == 31,]
@@ -321,7 +321,7 @@ area_31 = area_31[-1,]
 
 
 #inherit FAO area labels
-config$logger.info("Inherit FAO area multi-lingual labels")
+config$logger$INFO("Inherit FAO area multi-lingual labels")
 codelists <- c("CL_FI_WATERAREA_MAJOR.csv", "CL_FI_WATERAREA_SUBAREA.csv", "CL_FI_WATERAREA_DIVISION.csv", "CL_FI_WATERAREA_SUBDIVISION.csv", "CL_FI_WATERAREA_SUBUNIT.csv")
 jobDirPath <- getwd()
 setwd(config$wd)
@@ -349,8 +349,8 @@ setwd("..")
 readr::write_csv(data.frame(code = character(0), uri = character(0), label = character(0), definition = character(0)), "outputs/public/register.csv")
 readr::write_csv(data.frame(code = character(0), uri = character(0), label = character(0), definition = character(0)), "outputs/internal/register.csv")
 
-config$logger.info(getwd())
-config$logger.info(class(result))
+config$logger$INFO(getwd())
+config$logger$INFO(class(result))
 sf::st_crs(result) = 4326
 result$F_STATUS = as.character(result$F_STATUS)
 result$F_STATUS = unlist(lapply(result$F_STATUS, function(x){
@@ -361,7 +361,7 @@ export_and_zip_features(result, code = "FAO_AREAS_NOCOASTLINE",
                         dir = "outputs/public")
 
 #compute and export 'FAO_AREAS_ERASE'
-config$logger.info("Compute/Export FAO areas layer erased by land")
+config$logger$INFO("Compute/Export FAO areas layer erased by land")
 continent.high <- WFS$getFeatures("fifao:UN_CONTINENT2_new")
 sf::st_crs(continent.high) = 4326
 result_erased_hr <- eraseFisheryStatAreas(result, continent.high, computeSurfaces = FALSE)
@@ -379,14 +379,14 @@ export_and_zip_features(result_erased_lr, code = "FAO_AREAS_ERASE_LOWRES",
                         dir = "outputs/public")
 
 #compute and export 'FAO_AREAS_SINGLEPART' ('FAO_AREAS' with Polygons instead of MultiPolygons)
-config$logger.info("Compute/Export single part feature collections")
+config$logger$INFO("Compute/Export single part feature collections")
 result_singlepart <- terra::vect(result) %>% terra::disagg() %>% sf::st_as_sf()
 export_and_zip_features(result_singlepart, code = "FAO_AREAS_SINGLEPART", 
                         title = "FAO statistical areas (Marine) - Simple polygons / No coastline (for use with custom coastline resolutions)",
                         dir = "outputs/internal")
 
 #compute and export 'FAO_AREAS_ERASE_SINGLEPART' ('FAO_AREAS_ERASE' with Polygons instead of MultiPolygons)
-config$logger.info("Compute/Export single part feature collections")
+config$logger$INFO("Compute/Export single part feature collections")
 result_erased_hr_singlepart <- terra::vect(result_erased_hr) %>% terra::disagg() %>% sf::st_as_sf()
 export_and_zip_features(result_erased_hr_singlepart, code = "FAO_AREAS_ERASE_SINGLEPART", 
                         title = "FAO statistical areas (Marine) - Simple polygons / Erased by coastline (intermediate resolution - aligned with UN countries & territories)",
@@ -432,7 +432,7 @@ export_and_zip_features(fao_areas_inland, code = "FAO_AREAS_INLAND",
                         dir = "outputs/public")
 
 #surfaces table
-config$logger.info("Export FAO areas surface calculations")
+config$logger$INFO("Export FAO areas surface calculations")
 result_erased_hr$SURFACE = as(sf::st_area(sf::st_transform(result_erased_hr, "+proj=eck4")), "numeric")
 readr::write_csv(as.data.frame(result_erased_hr)[,c("ID", "F_CODE", "SURFACE")],"fsa_surfaces.csv")
 

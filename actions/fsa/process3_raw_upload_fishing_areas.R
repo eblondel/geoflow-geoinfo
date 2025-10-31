@@ -5,9 +5,9 @@
 #
 # @author eblondel
 #
-config$logger.info("============================================================================================")
-config$logger.info("UPLOAD main FAO areas datasets...")
-config$logger.info("============================================================================================")
+config$logger$INFO("============================================================================================")
+config$logger$INFO("UPLOAD main FAO areas datasets...")
+config$logger$INFO("============================================================================================")
 
 
 #packages
@@ -36,7 +36,7 @@ shapefiles_to_upload <- list.files(file.path(getwd(),"data/fsa/outputs/internal"
 for(shapefile in shapefiles_to_upload){
 
 	#shapefile upload
-	config$logger.info(sprintf("Uploading shapefile '%s'...", shapefile))
+	config$logger$INFO(sprintf("Uploading shapefile '%s'...", shapefile))
 	uploaded <- GS$uploadShapefile(
 	  gs_ws_name, gs_ds_name, endpoint = "file",configure = "none",
 	  update = "overwrite", shapefile, "UTF-8"

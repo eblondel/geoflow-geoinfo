@@ -11,9 +11,9 @@
 # @author eblondel
 # @date 2015/10/27
 #
-config$logger.info("============================================================================================")
-config$logger.info("UPLOAD/PUBLISH FAO areas MASTER dataset...")
-config$logger.info("============================================================================================")
+config$logger$INFO("============================================================================================")
+config$logger$INFO("UPLOAD/PUBLISH FAO areas MASTER dataset...")
+config$logger$INFO("============================================================================================")
 
 #packages
 #--------------------------------------------------------------------------------------------
@@ -41,14 +41,14 @@ WFS <- config$software$input$wfs
 #upload the FAO_AREAS_MASTER
 gs_master <- "FAO_AREAS_MASTER"
 gs_master_shpzip <- file.path(config$wd, "data/fsa", paste0(gs_master,".zip"))
-config$logger.info(sprintf("Uploading FSA master shapefile '%s'...", gs_master_shpzip))
+config$logger$INFO(sprintf("Uploading FSA master shapefile '%s'...", gs_master_shpzip))
 uploaded <- GS$uploadShapefile(
   gs_ws_name, gs_ds_name, endpoint = "file",configure = "none",
   update = "overwrite", gs_master_shpzip, "UTF-8"
 )
 
 # layer creation/update FAO_AREAS_MASTER
-config$logger.info(sprintf("Publishing FSA master layer '%s'...", gs_master))
+config$logger$INFO(sprintf("Publishing FSA master layer '%s'...", gs_master))
 featureType <- GSFeatureType$new()
 featureType$setName(gs_master)
 featureType$setNativeName(gs_master)
@@ -64,10 +64,10 @@ featureType$setNativeBoundingBox(-180,-90,180,90, crs ="EPSG:4326")
 #action on GS featuretype
 ft <- GS$getFeatureType(gs_ws_name, gs_ds_name, gs_master)
 if(!is(ft, "GSFeatureType")){
-	config$logger.info(sprintf("Creating feature type '%s'", gs_master))
+	config$logger$INFO(sprintf("Creating feature type '%s'", gs_master))
 	ft_created <- GS$createFeatureType(gs_ws_name, gs_ds_name, featureType)
 }else{
-	config$logger.info(sprintf("Updating feature type '%s'", gs_master))
+	config$logger$INFO(sprintf("Updating feature type '%s'", gs_master))
 	ft_updated <- GS$updateFeatureType(gs_ws_name, gs_ds_name, featureType)
 }
 
@@ -79,15 +79,15 @@ layer$setDefaultStyle("generic")
 #action on GS layer
 lyr <- GS$getLayer(gs_master)
 if(!is(lyr, "GSLayer")){
-	config$logger.info(sprintf("Creating layer '%s'", gs_master))
+	config$logger$INFO(sprintf("Creating layer '%s'", gs_master))
 	lyr_created <- GS$createLayer(layer)	
 }else{
-	config$logger.info(sprintf("Updating layer '%s'", gs_master))
+	config$logger$INFO(sprintf("Updating layer '%s'", gs_master))
 	lyr_updated <- GS$updateLayer(layer)
 }
 
 #we reload the wfs capabilities to discover newly added FAO_AREAS_MASTER
 #config$software$wfs$reloadCapabilities()
 
-config$logger.info("Successful master data processing")
+config$logger$INFO("Successful master data processing")
 config$logger.warn(sprintf("We are here: %s", getwd()))

@@ -5,9 +5,9 @@
 #
 # @author eblondel
 #
-config$logger.info("============================================================================================")
-config$logger.info("PUBLISH main FAO areas datasets...")
-config$logger.info("============================================================================================")
+config$logger$INFO("============================================================================================")
+config$logger$INFO("PUBLISH main FAO areas datasets...")
+config$logger$INFO("============================================================================================")
 
 
 #packages
@@ -57,10 +57,10 @@ for(shapefile in shapefiles_to_upload){
 	#action on GS featuretype
 	ft <- GS$getFeatureType(gs_ws_name, gs_ds_name, gs_ft_newname)
 	if(!is(ft, "GSFeatureType")){
-		config$logger.info(sprintf("Creating feature type '%s'", gs_ft_newname))
+		config$logger$INFO(sprintf("Creating feature type '%s'", gs_ft_newname))
 		ft_created <- GS$createFeatureType(gs_ws_name, gs_ds_name, featureType)
 	}else{
-		config$logger.info(sprintf("Updating feature type '%s'", gs_ft_newname))
+		config$logger$INFO(sprintf("Updating feature type '%s'", gs_ft_newname))
 		ft_updated <- GS$updateFeatureType(gs_ws_name, gs_ds_name, featureType)
 	}
 	
@@ -72,10 +72,10 @@ for(shapefile in shapefiles_to_upload){
 	#action on GS layer
 	lyr <- GS$getLayer(gs_ft_newname)
 	if(!is(lyr, "GSLayer")){
-		config$logger.info(sprintf("Creating layer '%s'", gs_ft_newname))
+		config$logger$INFO(sprintf("Creating layer '%s'", gs_ft_newname))
 		lyr_created <- GS$createLayer(layer)	
 	}else{
-		config$logger.info(sprintf("Updating layer '%s'", gs_ft_newname))
+		config$logger$INFO(sprintf("Updating layer '%s'", gs_ft_newname))
 		lyr_updated <- GS$updateLayer(layer)
 	}	
 }
@@ -143,10 +143,10 @@ for(figis_fsa_layername in names(figis_fsa_layers)){
 	#action on GS featuretype
 	ft <- GS$getFeatureType(gs_ws_name, gs_ds_name, ft_name)
 	if(!is(ft, "GSFeatureType")){
-		config$logger.info(sprintf("Creating feature type '%s'", ft_name))
+		config$logger$INFO(sprintf("Creating feature type '%s'", ft_name))
 		ft_created <- GS$createFeatureType(gs_ws_name, gs_ds_name, featureType)
 	}else{
-		config$logger.info(sprintf("Updating feature type '%s'", ft_name))
+		config$logger$INFO(sprintf("Updating feature type '%s'", ft_name))
 		ft_updated <- GS$updateFeatureType(gs_ws_name, gs_ds_name, featureType)
 	}
 		
@@ -159,10 +159,10 @@ for(figis_fsa_layername in names(figis_fsa_layers)){
 	#action on GS layer
 	lyr <- GS$getLayer(ft_name)
 	if(!is(lyr, "GSLayer")){
-		config$logger.info(sprintf("Creating layer '%s'", ft_name))
+		config$logger$INFO(sprintf("Creating layer '%s'", ft_name))
 		lyr_created <- GS$createLayer(layer)	
 	}else{
-		config$logger.info(sprintf("Updating layer '%s'", ft_name))
+		config$logger$INFO(sprintf("Updating layer '%s'", ft_name))
 		lyr_updated <- GS$updateLayer(layer)
 	}	
 }

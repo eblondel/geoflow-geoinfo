@@ -107,10 +107,10 @@ fao_n<- fao_n[c("country_and_territory","georegion", "species", "water_area","wa
 #fao_n <- do.call("rbind", list(fao_n, mac_data, hkg_data, twn_data))
 
 if(!is.null(opts$water_areas)){
-	config$logger.info(opts$water_areas)
+	config$logger$INFO(opts$water_areas)
 	fao_n = fao_n[fao_n$water_area %in% opts$water_areas,]
-	config$logger.info("Count records")
-	config$logger.info(nrow(fao_n))
+	config$logger$INFO("Count records")
+	config$logger$INFO(nrow(fao_n))
 }
 
 entity$data$features<-fao_n
