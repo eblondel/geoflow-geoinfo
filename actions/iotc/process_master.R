@@ -81,7 +81,7 @@ function(action, entity, config){
       )
     }))
     
-    # write it to ./data/register.csv (overwrite each run)
+    # write it to ./data/register.csv
     readr::write_csv(register_df, file.path("data", "register.csv"))
   }
   
