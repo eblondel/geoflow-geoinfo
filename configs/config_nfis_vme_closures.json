@@ -8,7 +8,7 @@
     	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
   	],
 		"environment": {
-			"file": "envs/geoinfo.env",
+			"file": "/envs/geoinfo.env",
 			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
 		},
 		"options": {
