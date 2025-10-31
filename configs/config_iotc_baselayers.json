@@ -61,6 +61,11 @@
 	],
 	"actions": [
 	  {
+  	  "id": "process_master",
+  	  "script": "../actions/iotc/process_master.R",
+  	  "run":true
+	  },
+	  {
       "id": "geometa-create-iso-19115",
       "run": true,
   	  "options": {
