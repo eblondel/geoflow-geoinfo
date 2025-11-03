@@ -140,4 +140,6 @@ function(action, entity, config){
   
   entity$data$dir = file.path(getwd(), "data") #make sure entity$data$data is used for geoserver (waiting for r-geoflow/geoflow#422)
   
+  entity$enrichWithRelations(config)
+  
 }
