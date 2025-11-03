@@ -11,15 +11,19 @@
 			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
 		}
 	},
-	"metadata": {
-	  "entities": [{
-  		"handler": "gsheet",
-  		"source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?usp=sharing"
-	  }],
-	  "contacts" : [{
+	 "metadata": {
+	    "entities": [{
+  		  "handler": "gsheet",
+  		  "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?usp=sharing"
+	    }],
+	    "contacts" : [{
         "handler": "gsheet",
         "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?gid=1005396552"
-      }]
+      }],
+	    "dictionary": [{
+	      "handler": "gsheet",
+	      "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?gid=227860508#gid=227860508"
+	    }]
 	},
 	"software": [
 	{
@@ -65,6 +69,15 @@
   	  "script": "../actions/iotc/process_master.R",
   	  "run":true
 	  },
+	  {
+    "id": "geometa-create-iso-19110",
+    "run": true,
+	  "options": {
+		  "exclude_values_for_attributes" : ["ID","namespace","system_owner_name","code_system_name",
+		  "differentiating_code_system","differentiating_code_system_description","area_name","source_link",
+		  "use_limitation"]
+	    }
+    },
 	  {
       "id": "geometa-create-iso-19115",
       "run": true,
