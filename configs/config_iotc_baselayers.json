@@ -74,7 +74,7 @@
     "run": true,
 	  "options": {
 		  "exclude_values_for_attributes" : ["area_type_code","label_en","label_fr","name_en",
-		  "name_fr","fishing_ground_prefix","system"]
+		  "name_fr","fishing_ground_prefix","system", "fid"]
 	    }
     },
 	  {
