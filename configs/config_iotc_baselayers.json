@@ -73,9 +73,8 @@
     "id": "geometa-create-iso-19110",
     "run": true,
 	  "options": {
-		  "exclude_values_for_attributes" : ["ID","namespace","system_owner_name","code_system_name",
-		  "differentiating_code_system","differentiating_code_system_description","area_name","source_link",
-		  "use_limitation"]
+		  "exclude_values_for_attributes" : ["area_type_code","label_en","label_fr","name_en",
+		  "name_fr","fishing_ground_prefix","system"]
 	    }
     },
 	  {
