@@ -22,7 +22,7 @@
       }],
 	    "dictionary": [{
 	      "handler": "gsheet",
-	      "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?gid=227860508#gid=227860508"
+	      "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?gid=227860508"
 	    }]
 	},
 	"software": [
@@ -73,7 +73,7 @@
     "id": "geometa-create-iso-19110",
     "run": true,
 	  "options": {
-		  "exclude_values_for_attributes" : ["area_type_code","label_en","label_fr","name_en",
+		  "exclude_values_for_attributes" : ["fid", "area_type_code","label_en","label_fr","name_en",
 		  "name_fr","fishing_ground_prefix","system"]
 	    }
     },
