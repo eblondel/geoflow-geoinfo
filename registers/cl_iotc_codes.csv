@@ -1,10 +1,10 @@
 code,uri,label,definition
-SA_ALB_01,,Albacore stock assessment (four area models) - statistical area 1 (north of 25° S - west of 75° E),Albacore stock assessment (four area models) - statistical area 1 (north of 25° S - west of 75° E)
-SA_ALB_02,,Albacore stock assessment (four area models) - statistical area 2 (north of 25° S - east of 75° E),Albacore stock assessment (four area models) - statistical area 2 (north of 25° S - east of 75° E)
-SA_ALB_03,,Albacore stock assessment (four area models) - statistical area 3 (south of 25° S - west of 75° E),Albacore stock assessment (four area models) - statistical area 3 (south of 25° S - west of 75° E)
-SA_ALB_04,,Albacore stock assessment (four area models) - statistical area 4 (south of 25° S - east of 75° E),Albacore stock assessment (four area models) - statistical area 4 (south of 25° S - east of 75° E)
-SA_ALB_ALT_01,,Albacore stock assessment (two area models) - statistical area 1 (west of 75° E),Albacore stock assessment (two area models) - statistical area 1 (west of 75° E)
-SA_ALB_ALT_02,,Albacore stock assessment (two area models) - statistical area 2 (east of 75° E),Albacore stock assessment (two area models) - statistical area 2 (east of 75° E)
+SA_ALB_01,,Albacore stock assessment (four area models) - statistical area 1 (north of 25 S - west of 75 E),Albacore stock assessment (four area models) - statistical area 1 (north of 25 S - west of 75 E)
+SA_ALB_02,,Albacore stock assessment (four area models) - statistical area 2 (north of 25 S - east of 75 E),Albacore stock assessment (four area models) - statistical area 2 (north of 25 S - east of 75 E)
+SA_ALB_03,,Albacore stock assessment (four area models) - statistical area 3 (south of 25 S - west of 75 E),Albacore stock assessment (four area models) - statistical area 3 (south of 25 S - west of 75 E)
+SA_ALB_04,,Albacore stock assessment (four area models) - statistical area 4 (south of 25 S - east of 75 E),Albacore stock assessment (four area models) - statistical area 4 (south of 25 S - east of 75 E)
+SA_ALB_ALT_01,,Albacore stock assessment (two area models) - statistical area 1 (west of 75 E),Albacore stock assessment (two area models) - statistical area 1 (west of 75 E)
+SA_ALB_ALT_02,,Albacore stock assessment (two area models) - statistical area 2 (east of 75 E),Albacore stock assessment (two area models) - statistical area 2 (east of 75 E)
 SA_BET_R0,,Bigeye tuna stock assessment - statistical area R0,Bigeye tuna stock assessment - statistical area R0
 SA_BET_R1N,,Bigeye tuna stock assessment - statistical area R1N,Bigeye tuna stock assessment - statistical area R1N
 SA_BET_R1S,,Bigeye tuna stock assessment - statistical area R1S,Bigeye tuna stock assessment - statistical area R1S

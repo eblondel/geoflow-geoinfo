@@ -14,7 +14,7 @@
 	 "metadata": {
 	    "entities": [{
   		  "handler": "gsheet",
-  		  "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?usp=sharing"
+  		  "source": "https://docs.google.com/spreadsheets/d/1ldOpfTjb64hBMgBXWzXEqTMwmHCUL0ZBcgwEFSMdBcw/edit?gid=430029225#gid=430029225"
 	    }],
 	    "contacts" : [{
         "handler": "gsheet",
