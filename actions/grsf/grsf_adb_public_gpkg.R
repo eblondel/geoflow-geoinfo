@@ -14,7 +14,7 @@ library(ggplot2)  # For plotting
 all_features_simplified = st_read("C:/Users/artur/OneDrive/Documents/GitHub/water_areas_shapefiles/all_areas_simplified.gpkg")
 all_features_simplified <- all_features_simplified %>%
   rename(use_limitation = useLimitation)
-all_features_simplified <- cbind(ID = paste(all_features_simplified$namespace, all_features_simplified$area_code, sep=":"), all_features_simplified)
+all_features_simplified <- cbind(ID = tolower(paste(all_features_simplified$namespace, all_features_simplified$area_code, sep=":")), all_features_simplified)
 #all_features_simplified$useLimitation <- use_limitation
 
 ##Geospatializing grsf_records data frame###########################
