@@ -1,0 +1,35 @@
+code,uri,label,definition
+SA_ALB_01,,Albacore stock assessment (four area models) - statistical area 1 (north of 25 S - west of 75 E),Albacore stock assessment (four area models) - statistical area 1 (north of 25 S - west of 75 E)
+SA_ALB_02,,Albacore stock assessment (four area models) - statistical area 2 (north of 25 S - east of 75 E),Albacore stock assessment (four area models) - statistical area 2 (north of 25 S - east of 75 E)
+SA_ALB_03,,Albacore stock assessment (four area models) - statistical area 3 (south of 25 S - west of 75 E),Albacore stock assessment (four area models) - statistical area 3 (south of 25 S - west of 75 E)
+SA_ALB_04,,Albacore stock assessment (four area models) - statistical area 4 (south of 25 S - east of 75 E),Albacore stock assessment (four area models) - statistical area 4 (south of 25 S - east of 75 E)
+SA_ALB_ALT_01,,Albacore stock assessment (two area models) - statistical area 1 (west of 75 E),Albacore stock assessment (two area models) - statistical area 1 (west of 75 E)
+SA_ALB_ALT_02,,Albacore stock assessment (two area models) - statistical area 2 (east of 75 E),Albacore stock assessment (two area models) - statistical area 2 (east of 75 E)
+SA_BET_R0,,Bigeye tuna stock assessment - statistical area R0,Bigeye tuna stock assessment - statistical area R0
+SA_BET_R1N,,Bigeye tuna stock assessment - statistical area R1N,Bigeye tuna stock assessment - statistical area R1N
+SA_BET_R1S,,Bigeye tuna stock assessment - statistical area R1S,Bigeye tuna stock assessment - statistical area R1S
+SA_BET_R2,,Bigeye tuna stock assessment - statistical area R2,Bigeye tuna stock assessment - statistical area R2
+SA_BET_R3,,Bigeye tuna stock assessment - statistical area R3,Bigeye tuna stock assessment - statistical area R3
+SA_BILL_HS_AUS,,Billfish hotspot around northwestern Australian waters,Billfish hotspot around northwestern Australian waters
+SA_BILL_HS_SOM,,Billfish hotspot around Somali waters,Billfish hotspot around Somali waters
+SA_SKJ_EAST,,Skipjack stock assessment (two area models) - eastern Indian Ocean statistical area,Skipjack stock assessment (two area models) - eastern Indian Ocean statistical area
+SA_SKJ_WEST,,Skipjack stock assessment (two area models) - western Indian Ocean statistical area,Skipjack stock assessment (two area models) - western Indian Ocean statistical area
+SA_SWO_NORTHEAST,,Swordfish stock assessment - northeastern Indian Ocean statistical area,Swordfish stock assessment - northeastern Indian Ocean statistical area
+SA_SWO_NORTHWEST,,Swordfish stock assessment - northwestern Indian Ocean statistical area,Swordfish stock assessment - northwestern Indian Ocean statistical area
+SA_SWO_OTHER,,Swordfish stock assessment - all other Indian Ocean areas,Swordfish stock assessment - all other Indian Ocean areas
+SA_SWO_SOUTHEAST,,Swordfish stock assessment - southeastern Indian Ocean statistical area,Swordfish stock assessment - southeastern Indian Ocean statistical area
+SA_SWO_SOUTHWEST,,Swordfish stock assessment - southwestern Indian Ocean statistical area,Swordfish stock assessment - southwestern Indian Ocean statistical area
+SA_SWO_SOUTH_SOUTHEAST,,Swordfish stock assessment - south-southeast Indian Ocean statistical area,Swordfish stock assessment - south-southeast Indian Ocean statistical area
+SA_SWO_SOUTH_SOUTHWEST,,Swordfish stock assessment - south-southwest Indian Ocean statistical area,Swordfish stock assessment - south-southwest Indian Ocean statistical area
+SA_YFT_ALT_R0,,Yellowfin tuna stock assessment (alternative) - all other Indian Ocean areas,Yellowfin tuna stock assessment (alternative) - all other Indian Ocean areas
+SA_YFT_ALT_R1a,,Yellowfin tuna stock assessment (alternative) - statistical area R1a,Yellowfin tuna stock assessment (alternative) - statistical area R1a
+SA_YFT_ALT_R1b,,Yellowfin tuna stock assessment (alternative) - statistical area R1b,Yellowfin tuna stock assessment (alternative) - statistical area R1b
+SA_YFT_ALT_R2,,Yellowfin tuna stock assessment (alternative) - statistical area R2,Yellowfin tuna stock assessment (alternative) - statistical area R2
+SA_YFT_ALT_R3,,Yellowfin tuna stock assessment (alternative) - statistical area R3,Yellowfin tuna stock assessment (alternative) - statistical area R3
+SA_YFT_ALT_R4,,Yellowfin tuna stock assessment (alternative) - statistical area R4,Yellowfin tuna stock assessment (alternative) - statistical area R4
+SA_YFT_R0,,Yellowfin tuna stock assessment (default) - all other Indian Ocean areas,Yellowfin tuna stock assessment (default) - all other Indian Ocean areas
+SA_YFT_R1a,,Yellowfin tuna stock assessment (default) - statistical area R1a,Yellowfin tuna stock assessment (default) - statistical area R1a
+SA_YFT_R1b,,Yellowfin tuna stock assessment (default) - statistical area R1b,Yellowfin tuna stock assessment (default) - statistical area R1b
+SA_YFT_R2,,Yellowfin tuna stock assessment (default) - statistical area R2,Yellowfin tuna stock assessment (default) - statistical area R2
+SA_YFT_R3,,Yellowfin tuna stock assessment (default) - statistical area R3,Yellowfin tuna stock assessment (default) - statistical area R3
+SA_YFT_R4,,Yellowfin tuna stock assessment (default) - statistical area R4,Yellowfin tuna stock assessment (default) - statistical area R4
