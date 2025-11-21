@@ -1,0 +1,106 @@
+{
+	"profile": {
+		"id": "vme-workflow",
+		"mode": "entity",
+		"logos": [
+    	"https://iotc.org/sites/all/themes/iotc/images/iotc-logo.png",
+    	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
+  	],
+		"environment": {
+			"file": "envs/geoinfo.env",
+			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
+		}
+	},
+	 "metadata": {
+	    "entities": [{
+  		  "handler": "gsheet",
+  		  "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=430029225#gid=430029225"
+	    }],
+	    "contacts" : [{
+        "handler": "gsheet",
+        "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=1005396552#gid=1005396552"
+      }],
+	    "dictionary": [{
+	      "handler": "gsheet",
+	      "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=227860508#gid=227860508"
+	    }]
+	},
+	"software": [
+	{
+		"id": "nfi_wfs",
+		"type": "input",
+		"software_type": "wfs",
+		"parameters": {
+			"url": "https://www.fao.org/fishery/geoserver/wfs",
+			"serviceVersion": "1.0.0",
+			"logger": "DEBUG"
+		}
+	},
+	{
+		"id": "nfi-geonetwork",
+		"type": "output",
+		"software_type": "geonetwork",
+		"parameters": {
+			"url": "{{GEONETWORK_URL}}",
+			"user": "{{GEONETWORK_USER}}",
+			"pwd": "{{GEONETWORK_PASSWORD}}",
+			"version": "{{GEONETWORK_VERSION}}",
+			"logger": "INFO"
+		}
+	},
+	{
+		"id": "nfi-geoserver",
+		"type": "output",
+		"software_type": "geoserver",
+		"parameters": {
+			"url": "{{GEOSERVER_URL}}",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
+			"logger": "DEBUG"
+		},
+		"properties": {
+			"workspace": "iotc"
+		}
+	}
+	],
+	"actions": [
+	  {
+  	  "id": "process_intersection",
+  	  "script": "../actions/iotc/process_intersection.R",
+  	  "run":true
+	  },
+	  {
+    "id": "geometa-create-iso-19110",
+    "run": true,
+	  "options": {
+		  "exclude_values_for_attributes" : ["fid", "area_type_code","label_en","label_fr","name_en",
+		  "name_fr","fishing_ground_prefix","system"]
+	   }
+    },
+	  {
+      "id": "geometa-create-iso-19115",
+      "run": true,
+  	  "options": {
+  	      "logo": true,
+  	      "include_object_identification_ids": true
+  	  }
+	  },
+	  {
+  	  "id": "geonapi-publish-iso-19139",
+  	  "run":true
+	  },
+	  {
+  	  "id": "geosapi-publish-ogc-services",
+  	  "run":true,
+  	  "options": {
+  		  "createWorkspace": true,
+  		  "createStore": true,
+  		  "overwrite": true,
+  		  "enrich_with_relation_wfs_download_links": true,
+  		  "describe_wms_relation_with_category": true,
+          "describe_wms_relation_with_ogc_service_description" : false
+  	    }
+	  }
+	  
+	]
+}
