@@ -1,10 +1,8 @@
 function(action, entity, config){
   
-  # process iotc_stock_assessment_sa_master.gpkg
-  #layer_master <- entity$data$features
-  #layer_master_path <- entity$data$source[[1]] #source 1 is the local path of IOTC layer master
-  #layer_master <- read.csv(layer_master_path)
-  
+  #option
+  crop1 = if(!is.null(action$getOption("crop1"))) action$getOption("crop1") else FALSE
+  crop2 = if(!is.null(action$getOption("crop2"))) action$getOption("crop2") else FALSE
   
   
   # Connect to WFS FAO Geoserver
@@ -14,23 +12,20 @@ function(action, entity, config){
     logger = "INFO"
   )
   
-  #layer_master could be retrieved from WFS also! entity$data$source[[1]] would be "iotc_assessment_sa_master"
-  layer_master <- WFS$getFeatures(entity$data$source[[1]])
-  #layer_master <- WFS$getFeatures(entity$data$source[[1]])
+  #layer1
+  layer1 <- WFS$getFeatures(entity$data$source[[1]])
+  sf::st_crs(layer1) = 4326
   
-  # Grid 5deg x 5deg / ideally we will have a "cwp_grid_map" with all Grids
-  #grid <- entity$data$source[[2]] #source[[2]] would be "cwp-grid-map-5deg_x_5deg"
-  grid5 <- WFS$getFeatures(entity$data$source[[2]])
-  sf::st_crs(grid5) <- 4326
+  #layer2
+  layer2 <- WFS$getFeatures(entity$data$source[[2]])
+  sf::st_crs(layer2) = 4326
   
-  # Low-res continents layer /could be from a data[[3]]!!
-  continent_lowres <- WFS$getFeatures("fifao:UN_CONTINENT2")
-  sf::st_crs(continent_lowres) <- 4326
-    
-  # # High-res continents layer
-  # continent_highres <- WFS$getFeatures("fifao:UN_CONTINENT2_new")
-  # continent_highres <- sf::st_make_valid(continent_highres)
-  # sf::st_crs(continent_highres) <- 4326
+  # Low-res continents layer
+  continent_lowres <- WFS$getFeatures("fifao:UN_CONTINENT2") #TODO to move to a R fdi data package
+  sf::st_crs(continent_lowres) = 4326
+  continent_lowres <- sf::st_make_valid(continent_lowres)
+  
+  #TODO refactor intersection logic into a util function in fdi4R!!! https://github.com/fdiwg/fdi4R/issues/8
   
   # helper: safe difference that never breaks on empty result
   safe_difference <- function(geom, mask){
@@ -47,133 +42,93 @@ function(action, entity, config){
   
   # union masks (much more efficient and stable)
   mask_lowres  <- sf::st_union(sf::st_geometry(continent_lowres))
-  # mask_highres <- sf::st_union(sf::st_geometry(continent_highres))
   
-  #### 1) CUT MAIN LAYER BY COASTLINES ####
+  # Use an equal-area CRS for area calculations
+  area_crs <- "+proj=eck4"
   
-  layer_lowres_sfc <- sf::st_sfc(
-    lapply(seq_len(nrow(layer_master)), function(i){
-      safe_difference(sf::st_geometry(layer_master[i, ]), mask_lowres)
-    }),
-    crs = 4326
-  )
-  layer_lowres <- sf::st_set_geometry(layer_master, layer_lowres_sfc)
+  #### 1) PROCESS LAYER1 ####
+  layer1_lowres = NULL
+  if(crop1){
+    config$logger$INFO("Croping layer 1 with low-res continent layer")
+    layer1_lowres_sfc <- sf::st_sfc(
+      lapply(seq_len(nrow(layer1)), function(i){
+        safe_difference(sf::st_geometry(layer1[i, ]), mask_lowres)
+      }),
+      crs = 4326
+    )
+    layer1_lowres <- sf::st_set_geometry(layer1, layer1_lowres_sfc)
+    sf::st_crs(layer1_lowres)  <- 4326
+    layer1_lowres    <- sf::st_make_valid(layer1_lowres)
+    layer1_lowres$surface1  <- as.numeric(sf::st_area( sf::st_transform(layer1_lowres,  area_crs) ))
+    layer1$surface1 = layer1_lowres$surface1 #recover accurate surface1 in non-cut layer
+  }else{
+    layer1$surface1 = as.numeric(sf::st_area( sf::st_transform(layer1,  area_crs) ))
+  }
   
-  # layer_highres_sfc <- sf::st_sfc(
-  #   lapply(seq_len(nrow(layer_master)), function(i){
-  #     safe_difference(sf::st_geometry(layer_master[i, ]), mask_highres)
-  #   }),
-  #   crs = 4326
-  # )
-  # layer_highres <- sf::st_set_geometry(layer_master, layer_highres_sfc)
-  
-  sf::st_crs(layer_lowres)  <- 4326
-  # sf::st_crs(layer_highres) <- 4326
-  
-  #### 2) CUT GRID5 BY COASTLINES (lowres / highres) ####
-  
-  grid5 <- sf::st_make_valid(grid5)
-  
-  grid5_lowres_sfc <- sf::st_sfc(
-    lapply(seq_len(nrow(grid5)), function(i){
-      safe_difference(sf::st_geometry(grid5[i, ]), mask_lowres)
-    }),
-    crs = 4326
-  )
-  
-  grid5_lowres <- sf::st_set_geometry(grid5, grid5_lowres_sfc)
-  sf::st_crs(grid5_lowres) <- 4326
-  
-  # grid5_highres_sfc <- sf::st_sfc(
-  #   lapply(seq_len(nrow(grid5)), function(i){
-  #     safe_difference(sf::st_geometry(grid5[i, ]), mask_highres)
-  #   }),
-  #   crs = 4326
-  # )
-  # grid5_highres <- sf::st_set_geometry(grid5, grid5_highres_sfc)
-  # sf::st_crs(grid5_highres) <- 4326
+    
+  #### 2) PROCESS LAYER2 ####
+  layer2_lowres = NULL
+  if(crop2){
+    config$logger$INFO("Croping layer 2 with low-res continent layer")
+    layer2_lowres_sfc <- sf::st_sfc(
+      lapply(seq_len(nrow(layer2)), function(i){
+        safe_difference(sf::st_geometry(layer2[i, ]), mask_lowres)
+      }),
+      crs = 4326
+    )
+    layer2_lowres <- sf::st_set_geometry(layer2, layer2_lowres_sfc)
+    sf::st_crs(layer2_lowres) <- 4326
+    layer2_lowres    <- sf::st_make_valid(layer2_lowres)
+    layer2_lowres$surface2  <- as.numeric(sf::st_area( sf::st_transform(layer2_lowres,  area_crs) ))
+    layer2$surface2 = layer2_lowres$surface2 #recover accurate surface2 in non-cut layer
+  }else{
+    layer2$surface1 = as.numeric(sf::st_area( sf::st_transform(layer2,  area_crs) ))
+  }
   
   #### 3) INTERSECTIONS MAIN LAYERS x GRID5 (lowres / highres) ####
   
-  # Make all layers valid before intersection
-  layer_lowres    <- sf::st_make_valid(layer_lowres)
-  # layer_highres   <- sf::st_make_valid(layer_highres)
-  grid5_lowres    <- sf::st_make_valid(grid5_lowres)
-  # grid5_highres   <- sf::st_make_valid(grid5_highres)
+  layer1_lowres_to_intersect = if(crop1) layer1_lowres else layer1 
+  layer2_lowres_to_intersect = if(crop2) layer2_lowres else layer2
+  if(crop1 & crop2){
+    layer1_lowres_to_intersect = layer1
+  }
+  # Keep only needed attributes + IDs
+  layer1_lowres_to_intersect  <- layer1_lowres_to_intersect[, c(entity$data$sourceFid[[1]], "surface1")]
+  layer1_lowres_to_intersect$layer1 = entity$data$source[[1]]
+  layer1_lowres_to_intersect$code1 = layer1_lowres_to_intersect[[entity$data$sourceFid[[1]]]]
+  layer1_lowres_to_intersect = layer1_lowres_to_intersect[,c("layer1", "code1", "surface1")]
+  layer2_lowres_to_intersect  <- layer2_lowres_to_intersect[, c(entity$data$sourceFid[[2]], "surface2")]
+  layer2_lowres_to_intersect$layer2 = entity$data$source[[2]]
+  layer2_lowres_to_intersect$code2 = layer2_lowres_to_intersect[[entity$data$sourceFid[[2]]]]
+  layer2_lowres_to_intersect = layer2_lowres_to_intersect[,c("layer2", "code2", "surface2")]
   
-  # Add IDs to main layers (optional but useful)
-  layer_lowres$main_id  <- seq_len(nrow(layer_lowres))
-  # layer_highres$main_id <- seq_len(nrow(layer_highres))
-  
-  # Keep only needed grid attributes + IDs
-  grid5_lowres_sub  <- grid5_lowres[, c("CWP_CODE", "GRIDTYPE")]
-  # grid5_highres_sub <- grid5_highres[, c("CWP_CODE", "GRIDTYPE")]
-  
-  grid5_lowres_sub$grid_id  <- seq_len(nrow(grid5_lowres_sub))
-  # grid5_highres_sub$grid_id <- seq_len(nrow(grid5_highres_sub))
-  
-  # Use an equal-area CRS for area calculations (ESRI:54009 / EPSG:6933 are ok; using 6933 here)
-  area_crs <- 6933
-  
-  grid5_lowres_area  <- sf::st_transform(grid5_lowres_sub,  area_crs)
-  # grid5_highres_area <- sf::st_transform(grid5_highres_sub, area_crs)
-  
-  grid5_lowres_sub$grid_area  <- as.numeric(sf::st_area(grid5_lowres_area))
-  # grid5_highres_sub$grid_area <- as.numeric(sf::st_area(grid5_highres_area))
-  
+  #exclude empty geometries
+  layer1_lowres_to_intersect = layer1_lowres_to_intersect[!sf::st_is_empty(layer1_lowres_to_intersect),]
+  layer2_lowres_to_intersect = layer2_lowres_to_intersect[!sf::st_is_empty(layer2_lowres_to_intersect),]
+
   #### 4) INTERSECTIONS MAIN LAYERS x GRID5 ####
   
   # LOWRES intersection: main attrs + CWP_CODE + GRIDTYPE + coverage %
-  layer_lowres_grid5_int <- sf::st_intersection(layer_lowres, grid5_lowres_sub)
+  layer_lowres_int <- sf::st_intersection(layer1_lowres_to_intersect, layer2_lowres_to_intersect)
   # Compute intersection area in equal-area CRS
-  ll_int_area <- sf::st_transform(layer_lowres_grid5_int, area_crs)
-  layer_lowres_grid5_int$int_area <- as.numeric(sf::st_area(ll_int_area))
-  # Bring grid_area
-  layer_lowres_grid5_int$grid_area <- grid5_lowres_sub$grid_area[
-    match(layer_lowres_grid5_int$grid_id, grid5_lowres_sub$grid_id)
-  ]
-  # % of grid5 polygon covered by main polygon
-  layer_lowres_grid5_int$perc_grid5_covered <- ifelse(
-    !is.na(layer_lowres_grid5_int$grid_area) & layer_lowres_grid5_int$grid_area > 0,
-    100 * layer_lowres_grid5_int$int_area / layer_lowres_grid5_int$grid_area,
+  layer_lowres_int$surface <- as.numeric(sf::st_area( sf::st_transform(layer_lowres_int, area_crs) ))
+  # % of surface
+  layer_lowres_int$surface1_percent <- ifelse(
+    !is.na(layer_lowres_int$surface1),
+    round(100 * layer_lowres_int$surface / layer_lowres_int$surface1, 2),
+    NA_real_
+  )
+  layer_lowres_int$surface2_percent <- ifelse(
+    !is.na(layer_lowres_int$surface2),
+    round(100 * layer_lowres_int$surface / layer_lowres_int$surface2, 2),
     NA_real_
   )
   
-  # # HIGHRES intersection: main attrs + CWP_CODE + GRIDTYPE + coverage %
-  # layer_highres_grid5_int <- sf::st_intersection(layer_highres, grid5_highres_sub)
-  # # Compute intersection area in equal-area CRS
-  # lh_int_area <- sf::st_transform(layer_highres_grid5_int, area_crs)
-  # layer_highres_grid5_int$int_area <- as.numeric(sf::st_area(lh_int_area))
-  # # Bring grid_area
-  # layer_highres_grid5_int$grid_area <- grid5_highres_sub$grid_area[
-  #   match(layer_highres_grid5_int$grid_id, grid5_highres_sub$grid_id)
-  # ]
-  # # % of grid5 polygon covered by main polygon
-  # layer_highres_grid5_int$perc_grid5_covered <- ifelse(
-  #   !is.na(layer_highres_grid5_int$grid_area) & layer_highres_grid5_int$grid_area > 0,
-  #   100 * layer_highres_grid5_int$int_area / layer_highres_grid5_int$grid_area,
-  #   NA_real_
-  # )
+  layer_lowres_int = layer_lowres_int[,c("layer1","code1","surface1","layer2","code2","surface2","surface","surface1_percent","surface2_percent")]
   
   #### 4) SAVE GPKGs ####
-  
-  if(!dir.exists("data")) dir.create("data", recursive = TRUE)
-  
-  id <- entity$identifiers$id
-  
-  #lowres_path              <- file.path("data", paste0(id, "_lowres.gpkg"))
-  #highres_path             <- file.path("data", paste0(id, "_highres.gpkg"))
-  #grid5_lowres_path        <- file.path("data", paste0(id, "_grid5_lowres.gpkg"))
-  #grid5_highres_path       <- file.path("data", paste0(id, "_grid5_highres.gpkg"))
-  lowres_grid5_int_path    <- file.path("data", paste0(id, "_lowres_grid5_intersection.gpkg"))
-  #highres_grid5_int_path   <- file.path("data", paste0(id, "_highres_grid5_intersection.gpkg"))
-  
-  #sf::st_write(layer_lowres,           lowres_path,           delete_dsn = TRUE)
-  #sf::st_write(layer_highres,          highres_path,          delete_dsn = TRUE)
-  #sf::st_write(grid5_lowres,           grid5_lowres_path,     delete_dsn = TRUE)
-  #sf::st_write(grid5_highres,          grid5_highres_path,    delete_dsn = TRUE)
-  sf::st_write(layer_lowres_grid5_int, lowres_grid5_int_path, delete_dsn = TRUE)
-  # sf::st_write(layer_highres_grid5_int,highres_grid5_int_path,delete_dsn = TRUE)
+  layer_lowres_int_path    <- file.path("data", paste0(entity$data$layername, ".gpkg"))
+  sf::st_write(layer_lowres_int, layer_lowres_int_path, delete_dsn = TRUE)
   
   #### 5) AUTO REGISTER (unchanged, with extended labels) ####
   
@@ -183,25 +138,7 @@ function(action, entity, config){
     register_df <- do.call(rbind, lapply(data_files, function(x) {
       code <- tools::file_path_sans_ext(x)
       uri  <- NA
-      label <- code
-      definition <- label
-      
-      if (grepl("master", x, ignore.case = TRUE)) {
-        label <- "IOTC Stock assessment areas - Master layer (not cut with coastline)"
-      } else if (grepl("lowres_grid5_intersection", x, ignore.case = TRUE)) {
-        label <- "IOTC Stock assessment areas - Low-res coastline / 5x5 CWP grid intersection"
-      # } else if (grepl("highres_grid5_intersection", x, ignore.case = TRUE)) {
-      #   label <- "IOTC Stock assessment areas - High-res coastline / 5x5 CWP grid intersection"
-      #} else if (grepl("grid5_lowres", x, ignore.case = TRUE)) {
-      #  label <- "5x5 CWP grid - Cut with low-res coastline"
-      #} else if (grepl("grid5_highres", x, ignore.case = TRUE)) {
-      #  label <- "5x5 CWP grid - Cut with high-res coastline"
-      #} else if (grepl("lowres", x, ignore.case = TRUE)) {
-      #  label <- "IOTC Stock assessment areas - Layer cut with low-res coastline"
-      #} else if (grepl("highres", x, ignore.case = TRUE)) {
-      #  label <- "IOTC Stock assessment areas - Layer cut with high-res coastline"
-      }
-      
+      label <- entity$titles$title
       definition <- label
       
       data.frame(
@@ -215,6 +152,8 @@ function(action, entity, config){
     
     readr::write_csv(register_df, file.path("data", "register.csv"))
   }
+  
+  #TODO geoflow https://github.com/r-geoflow/geoflow/issues/421
   
   data_files_register <- readr::read_csv(file.path("data", "register.csv"))
   

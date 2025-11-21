@@ -67,14 +67,17 @@
 	  {
   	  "id": "process_intersection",
   	  "script": "../actions/iotc/process_intersection.R",
-  	  "run":true
+  	  "run": true,
+  	  "options" : {
+  	    "crop1": true,
+  	    "crop2": true
+  	  }
 	  },
 	  {
     "id": "geometa-create-iso-19110",
     "run": true,
 	  "options": {
-		  "exclude_values_for_attributes" : ["fid", "area_type_code","label_en","label_fr","name_en",
-		  "name_fr","fishing_ground_prefix","system"]
+		  "exclude_values_for_attributes" : ["layer1","layer2","surface1","surface2","surface","surface1_percent","surface2_percent"]
 	   }
     },
 	  {
