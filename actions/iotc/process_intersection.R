@@ -123,6 +123,7 @@ function(action, entity, config){
     round(100 * layer_lowres_int$surface / layer_lowres_int$surface2, 2),
     NA_real_
   )
+  layer_lowres_int = layer_lowres_int[sf::st_geometry_type(layer_lowres_int) %in% c("POLYGON", "MULTIPOLYGON"),]
   
   layer_lowres_int = layer_lowres_int[,c("layer1","code1","surface1","layer2","code2","surface2","surface","surface1_percent","surface2_percent")]
   
@@ -215,4 +216,12 @@ function(action, entity, config){
   entity$data$dir <- file.path(getwd(), "data")
   
   entity$enrichWithRelations(config)
+  
+  #entity$enrichWithData(config) #doesn't work to inherit features??? to investigate
+  entity$data$data[[1]]$setFeatures(layer_lowres_int)
+  
+  entity$setSpatialExtent(data = layer_lowres_int)
+  entity$setSpatialBbox(data = layer_lowres_int)
+  entity$setGeographicBbox()
+  
 }
