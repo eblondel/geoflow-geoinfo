@@ -131,7 +131,7 @@ function(action, entity, config){
   sf::st_write(layer_lowres_int, layer_lowres_int_path, delete_dsn = TRUE)
   
   #### 5) AUTO REGISTER (unchanged, with extended labels) ####
-  
+  data_files_register = NULL
   data_files <- list.files("data", pattern = "\\_intersection.gpkg$", full.names = FALSE)
   if (length(data_files) > 0) {
     
@@ -151,12 +151,11 @@ function(action, entity, config){
     }))
     
     readr::write_csv(register_df, file.path("data", "register.csv"))
+    data_files_register <- readr::read_csv(file.path("data", "register.csv"))
   }
   
   #TODO geoflow https://github.com/r-geoflow/geoflow/issues/421
-  
-  data_files_register <- readr::read_csv(file.path("data", "register.csv"))
-  
+
   data_files <- list.files("data", full.names = TRUE)
   ext_data_files <- data_files[basename(data_files) != "register.csv"]
   
