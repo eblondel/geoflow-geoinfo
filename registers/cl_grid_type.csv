@@ -1,0 +1,5 @@
+code,uri,label,definition
+5deg_x_5deg,https://www.fao.org/fishery/geonetwork/srv/eng/catalog.search#/metadata/cwp-grid-map-5deg_x_5deg, CWP Grid - Resolution 5 deg x 5 deg,Global vector grid at 5 deg x 5 deg resolution
+10deg_x_10deg,https://www.fao.org/fishery/geonetwork/srv/eng/catalog.search#/metadata/cwp-grid-map-10deg_x_10deg, CWP Grid - Resolution 10 deg x 10 deg,Global vector grid at 10 deg x 10 deg resolution
+20deg_x_20deg,https://www.fao.org/fishery/geonetwork/srv/eng/catalog.search#/metadata/cwp-grid-map-20deg_x_20deg, CWP Grid - Resolution 20 deg x 20 deg,Global vector grid at 20 deg x 20 deg resolution
+30deg_x_30deg,https://www.fao.org/fishery/geonetwork/srv/eng/catalog.search#/metadata/cwp-grid-map-30deg_x_30deg, CWP Grid - Resolution 30 deg x 30 deg,Global vector grid at 30 deg x 30 deg resolution

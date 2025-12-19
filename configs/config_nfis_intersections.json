@@ -14,15 +14,15 @@
 	 "metadata": {
 	    "entities": [{
   		  "handler": "gsheet",
-  		  "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=430029225#gid=430029225"
+  		  "source": "https://docs.google.com/spreadsheets/d/1ENWfjzErkdkV1sPYgJ8rRLqkukmBWG-_p6IjBZN4MGg/edit?gid=430029225#gid=430029225"
 	    }],
 	    "contacts" : [{
         "handler": "gsheet",
-        "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=1005396552#gid=1005396552"
+        "source": "https://docs.google.com/spreadsheets/d/1ENWfjzErkdkV1sPYgJ8rRLqkukmBWG-_p6IjBZN4MGg/edit?gid=1005396552#gid=1005396552"
       }],
 	    "dictionary": [{
 	      "handler": "gsheet",
-	      "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=227860508#gid=227860508"
+	      "source": "https://docs.google.com/spreadsheets/d/1ENWfjzErkdkV1sPYgJ8rRLqkukmBWG-_p6IjBZN4MGg/edit?gid=227860508#gid=227860508"
 	    }]
 	},
 	"software": [
@@ -67,8 +67,8 @@
 	],
 	"actions": [
 	  {
-  	  "id": "process_intersection",
-  	  "script": "../actions/core/process_intersection.R",
+  	  "id": "process_intersection_update",
+  	  "script": "../actions/iotc/process_intersection_update.R",
   	  "run": true,
   	  "options" : {
   	    "crop1": false,

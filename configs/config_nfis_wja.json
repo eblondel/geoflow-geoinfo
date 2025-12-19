@@ -3,8 +3,7 @@
 		"id": "vme-workflow",
 		"mode": "entity",
 		"logos": [
-    	"https://iotc.org/sites/all/themes/iotc/images/iotc-logo.png",
-    	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
+    	"https://www.fao.org/fishery/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png"
   	],
 		"environment": {
 			"file": "envs/geoinfo.env",
@@ -14,15 +13,15 @@
 	 "metadata": {
 	    "entities": [{
   		  "handler": "gsheet",
-  		  "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=430029225#gid=430029225"
+  		  "source": "https://docs.google.com/spreadsheets/d/1b-QxFVHSjbdFQLTZryRyUQZE0gVWpyCEXTu9bcdimoE/edit?gid=0#gid=0"
 	    }],
 	    "contacts" : [{
         "handler": "gsheet",
-        "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=1005396552#gid=1005396552"
+        "source": "https://docs.google.com/spreadsheets/d/1b-QxFVHSjbdFQLTZryRyUQZE0gVWpyCEXTu9bcdimoE/edit?gid=1643690778#gid=1643690778"
       }],
 	    "dictionary": [{
 	      "handler": "gsheet",
-	      "source": "https://docs.google.com/spreadsheets/d/154Q8WNrZJ4C0HpiVx8zub_iz3gS0sQhsS-5NHh3UfmQ/edit?gid=227860508#gid=227860508"
+	      "source": "https://docs.google.com/spreadsheets/d/1b-QxFVHSjbdFQLTZryRyUQZE0gVWpyCEXTu9bcdimoE/edit?gid=485781132#gid=485781132"
 	    }]
 	},
 	"software": [
@@ -32,8 +31,6 @@
 		"software_type": "wfs",
 		"parameters": {
 			"url": "https://www.fao.org/fishery/geoserver/wfs",
-			"user": "{{GEOSERVER_USER}}",
-			"pwd": "{{GEOSERVER_PASSWORD}}",
 			"serviceVersion": "1.0.0",
 			"logger": "DEBUG"
 		}
@@ -61,26 +58,14 @@
 			"logger": "DEBUG"
 		},
 		"properties": {
-			"workspace": "int"
+			"workspace": "cwp"
 		}
 	}
 	],
 	"actions": [
 	  {
-  	  "id": "process_intersection",
-  	  "script": "../actions/core/process_intersection.R",
-  	  "run": true,
-  	  "options" : {
-  	    "crop1": false,
-  	    "crop2": true
-  	  }
-	  },
-	  {
     "id": "geometa-create-iso-19110",
-    "run": true,
-	  "options": {
-		  "exclude_values_for_attributes" : ["layer1","layer2","surface1","surface2","surface","surface1_percent","surface2_percent"]
-	   }
+    "run": true
     },
 	  {
       "id": "geometa-create-iso-19115",

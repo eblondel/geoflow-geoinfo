@@ -1,0 +1,282 @@
+function(action, entity, config){
+  
+  # Connect to WFS FAO Geoserver
+  WFS_FAO <- ows4R::WFSClient$new(
+    url = "https://www.fao.org/fishery/geoserver/wfs",
+    serviceVersion = "1.0.0",
+    logger = "INFO"
+  )
+  
+  # Low-res continents layer
+  continent_lowres <- WFS_FAO$getFeatures("fifao:UN_CONTINENT2") #TODO to move to a R fdi data package
+  sf::st_crs(continent_lowres) = 4326
+  continent_lowres <- sf::st_make_valid(continent_lowres)
+  
+  # Connect to Server
+  #Identify server
+  server = NA
+  servers = entity$relations[sapply(entity$relations, function(x){x$key == "http"})]
+  if(length(servers)>0){
+    server = servers[[1]]$link
+  }
+  
+  # Connect to WFS
+  WFS <- ows4R::WFSClient$new(
+    url = server,
+    serviceVersion = "1.0.0",
+    logger = "INFO"
+  )
+  
+  #Get eez_land from WFS
+  eez_land <- WFS$getFeatures(entity$data$source[[1]])
+  sf::st_crs(eez_land) = 4326
+  
+  # WJA_1a
+  
+  #From VLIZ layer to WJA_NJAs dissolved
+  eez_land_buffer = sf::st_union(sf::st_make_valid(eez_land))
+  #eez_land_buffer_multiparts = sf::st_cast(eez_land_buffer, "POLYGON")
+  wja_nja_land <- smoothr::fill_holes(eez_land_buffer, threshold = units::set_units(10000000000, "m^2"))
+  wja_nja <- st_difference(wja_nja_land, continent_lowres)
+  wja_nja <- st_as_sf(data.frame(
+                          area_code = "nja",
+                          urn_code = "urn:fdi:code:cwp:wja:nja",
+                          area_name = "National Jurisdiction Area",
+                          area_type = "National Jurisdiction Area",
+                          geomtry = wja_nja))
+  
+  #Create WJA_ABNJ area
+  pts = matrix(c(-180,-90,-180,90,180,90,180,-90,-180,-90),ncol=2, byrow=TRUE)
+  poly = sf::st_sf(geom = sf::st_sfc(sf::st_polygon(list(pts)), crs = 4326))
+  hs = sf::st_difference(poly, eez_land_buffer)
+  hs = sf::st_cast(hs, "POLYGON")
+  wja_abnj = hs[sf::st_area(hs)>units::as_units(10000000000,"m2"),]
+  wja_abnj = sf::st_union(sf::st_make_valid(wja_abnj))
+  wja_abnj <- st_as_sf(data.frame(
+                          area_code = "abnj",
+                          urn_code = "urn:fdi:code:cwp:wja:abnj",
+                          area_name = "Areas Beyond National Jurisdiction (High Seas)",
+                          area_type = "Area Beyond National Jurisdiction",
+                          geometry = wja_abnj))
+  
+  #Combine into wja_1a
+  wja_1a <- dplyr::bind_rows(wja_nja, wja_abnj)
+  
+  
+  # WJA_2a 
+  
+  #Standardize eez_land attribute table with area_code
+  eez_land <- eez_land |>
+    dplyr::mutate(
+      area_code = dplyr::case_when(
+        # 1) Union EEZ and country / Landlocked country  → iso_sov1
+        pol_type %in% c("Union EEZ and country", "Landlocked country") ~ iso_sov1,
+        
+        # 2) joint regime (EEZ) → iso_sov1_iso_sov2
+        pol_type == "Joint regime (EEZ)" ~ paste(iso_sov1, iso_sov2, sep = "_"),
+        
+        # 3) Overlapping claim
+        #    if iso_sov3 not empty → iso_sov1_iso_sov2_iso_sov3
+        pol_type == "Overlapping claim" & !is.na(iso_sov3) & nzchar(iso_sov3) ~ 
+          paste(iso_sov1, iso_sov2, iso_sov3, sep = "_"),
+        
+        #    if iso_sov3 is empty/NA → fall back to iso_sov1_iso_sov2
+        pol_type == "Overlapping claim" ~ 
+          paste(iso_sov1, iso_sov2, sep = "_"),
+        
+        # default: NA
+        TRUE ~ NA_character_
+      )
+    )
+  eez_land <- sf::st_make_valid(eez_land)
+  
+  #Dissolve polygons with same area_code
+  geom_col <- attr(eez_land, "sf_column")
+  eez_land_cleaned <- eez_land |>
+    dplyr::group_by(area_code) |>
+    dplyr::summarise(
+      # for all non-geometry columns: keep first value in each group
+      across(-all_of(geom_col), ~ dplyr::first(.x)),
+      # for geometry: union
+      !!geom_col := sf::st_union(.data[[geom_col]]),
+      .groups = "drop"
+    )
+  
+  # Remove landlocked countries
+  eez_land_filtered <- eez_land_cleaned %>%
+    dplyr::filter(pol_type != "Landlocked country")
+  
+  #Union continents into a single polygon
+  continent_union <- continent_lowres %>%
+    st_make_valid() %>%
+    st_union()
+  
+  #Choose a projected CRS for the operation
+  crs_proj <- 3857  # or another global projected CRS
+  
+  eez_proj       <- st_transform(eez_land_filtered, crs_proj)
+  continent_proj <- st_transform(continent_union,   crs_proj)
+  
+  #Difference in projected CRS – vectorized over all rows
+  eez_diff_proj <- st_difference(eez_proj, continent_proj)
+  
+  #Drop completely empty geometries, if any
+  eez_diff_proj <- eez_diff_proj %>%
+    filter(!st_is_empty(the_geom))
+  
+  #Transform back to original CRS (lon/lat)
+  eez <- st_transform(eez_diff_proj, st_crs(eez_land_filtered))
+
+  #Create wja_nja
+  wja_nja_iso3 <- eez %>%
+    dplyr::transmute(
+      area_code = .data$area_code,
+      urn_code = paste0("urn:fdi:code:cwp:wja:nja:iso3:", tolower(.data$area_code)),
+      area_name = .data$union,   # from column "union"
+      area_type = .data$pol_type # from column "pol_type"
+    )
+  
+  #create WJA_2a adding ABNJ
+  
+  # Standardize wja_abnj to match wja_nja_iso3 structure
+  wja_abnj2 <- wja_abnj %>%
+    # keep only the needed columns + geometry
+    transmute(
+      area_code,
+      urn_code,
+      area_name,
+      area_type,
+      geometry = .data$geometry  # move the_geom into a column called "geometry"
+    ) %>%
+    st_as_sf()                    # rebuild as sf with 'geometry' as sf column
+  
+  # geometries are in 'the_geom', rename that column to 'geometry'
+  if ("the_geom" %in% names(wja_nja_iso3)) {
+    wja_nja_iso3 <- wja_nja_iso3 %>%
+      rename(geometry = the_geom)
+  }
+  
+  #'geometry' as the active geometry column
+  st_geometry(wja_nja_iso3) <- "geometry"
+  
+  # wja_abnj has the real geom in 'the_geom'
+  if ("the_geom" %in% names(wja_abnj)) {
+    wja_abnj2 <- wja_abnj %>%
+      select(area_code, urn_code, area_name, area_type, geometry) %>%
+      st_as_sf()
+  } else {
+    wja_abnj2 <- wja_abnj %>%
+      select(area_code, urn_code, area_name, area_type, geometry) %>%
+      st_as_sf()
+  }
+  
+  # 'geometry' as the geometry column
+  st_geometry(wja_abnj2) <- "geometry"
+  
+  
+  #Combine into wja_2a
+  wja_2a <- dplyr::bind_rows(wja_nja_iso3, wja_abnj2)
+  
+  
+  #SAVE GPKG
+  wja_layer = get(entity$data$layername)
+  wja_layer_path <- file.path("data", paste0(entity$data$layername, ".gpkg"))
+  sf::st_write(wja_layer, wja_layer_path, delete_dsn = TRUE)
+  
+  
+  #####
+  #### 5) AUTO REGISTER (unchanged, with extended labels) ####
+  data_files_register = NULL
+  data_files <- list.files("data", pattern = "\\.gpkg$", full.names = FALSE)
+  if (length(data_files) > 0) {
+    
+    register_df <- do.call(rbind, lapply(data_files, function(x) {
+      code <- tools::file_path_sans_ext(x)
+      uri  <- NA
+      label <- entity$titles$title
+      definition <- label
+      
+      data.frame(
+        code = code,
+        uri = uri,
+        label = label,
+        definition = definition,
+        stringsAsFactors = FALSE
+      )
+    }))
+    
+    readr::write_csv(register_df, file.path("data", "register.csv"))
+    data_files_register <- readr::read_csv(file.path("data", "register.csv"))
+  }
+  
+  #TODO geoflow https://github.com/r-geoflow/geoflow/issues/421
+  
+  data_files <- list.files("data", full.names = TRUE)
+  ext_data_files <- data_files[basename(data_files) != "register.csv"]
+  
+  #Keep ONLY intersection layers as geoflow_data children
+  ext_data_files <- ext_data_files[grepl("\\.gpkg$", basename(ext_data_files))]
+  
+  entity$data$data <- lapply(ext_data_files, function(data_file){
+    ext_data <- entity$data$clone(deep = TRUE)
+    ext_data$dir <- NULL
+    ext_data_src <- basename(data_file)
+    ext_data_name <- unlist(strsplit(ext_data_src, "\\."))[1]
+    ext_data_extension <- unlist(strsplit(ext_data_src, "\\."))[2]
+    attr(ext_data_src, "uri") <- data_file
+    ext_data$addSource(ext_data_src)
+    uploadSource <- paste0(ext_data_name, ".", ext_data_extension)
+    ext_data$setUploadSource(uploadSource)
+    
+    sourceType <- entity$data$sourceType
+    if(is.null(entity$data$sourceType) || entity$data$sourceType == "other"){
+      sourceType <- switch(ext_data_extension,
+                           "shp" = "shp",
+                           "gpkg" = "gpkg",
+                           "tif" = "geotiff",
+                           "csv" = "csv",
+                           "parquet" = "parquet",
+                           "other"
+      )
+    }
+    if(!is.null(sourceType)){
+      ext_data$setSourceType(sourceType)
+    }
+    if((is.null(entity$data$uploadType) || entity$data$uploadType == "other") && !is.null(sourceType)){
+      if(sourceType != "zip") ext_data$setUploadType(sourceType)
+      if(!is.null(ext_data$uploadType)) if(ext_data$uploadType == "geotiff") ext_data$setSpatialRepresentationType("grid")
+    }
+    
+    hasStoreDeclared <- FALSE
+    if(!is.null(config$software$output$geoserver_config$properties$store)) hasStoreDeclared <- TRUE
+    if(!is.null(entity$data$store)) hasStoreDeclared <- TRUE
+    if(!hasStoreDeclared) ext_data$setStore(ext_data_name)
+    ext_data$setLayername(ext_data_name)
+    
+    # inherit layer metadata from data file register (if any)
+    if(!is.null(data_files_register)){
+      register_entry <- data_files_register[data_files_register$code == ext_data_name,]
+      if(nrow(register_entry) > 0){
+        register_entry <- register_entry[1L,]
+        if(!is.na(register_entry$uri))        ext_data$setLayeruri(register_entry$uri)
+        if(!is.na(register_entry$label))      ext_data$setLayertitle(register_entry$label)
+        if(!is.na(register_entry$definition)) ext_data$setLayerdesc(register_entry$definition)
+      }
+    }
+    
+    return(ext_data)
+  })
+  
+  entity$data$dir <- file.path(getwd(), "data")
+  
+  entity$enrichWithRelations(config)
+  
+  #entity$enrichWithData(config) #doesn't work to inherit features??? to investigate
+  entity$data$data[[1]]$setFeatures(wja_layer)
+  
+  entity$setSpatialExtent(data = wja_layer)
+  entity$setSpatialBbox(data = wja_layer)
+  entity$setGeographicBbox()
+  
+  
+}

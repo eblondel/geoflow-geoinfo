@@ -33,3 +33,15 @@ SA_YFT_R1b,,Yellowfin tuna stock assessment (default) - statistical area R1b,Yel
 SA_YFT_R2,,Yellowfin tuna stock assessment (default) - statistical area R2,Yellowfin tuna stock assessment (default) - statistical area R2
 SA_YFT_R3,,Yellowfin tuna stock assessment (default) - statistical area R3,Yellowfin tuna stock assessment (default) - statistical area R3
 SA_YFT_R4,,Yellowfin tuna stock assessment (default) - statistical area R4,Yellowfin tuna stock assessment (default) - statistical area R4
+IO_ALL,,Indian Ocean - all areas,Indian Ocean - all areas
+IO_ANTARCTIC,,Indian Ocean - southern antarctic area,Indian Ocean - southern antarctic area
+IO_ANTARCTIC_EAST,,Indian Ocean - southwestern antarctic area (< 80° E),Indian Ocean - southwestern antarctic area (< 80° E)
+IO_ANTARCTIC_WEST,,Indian Ocean - southeastern antarctic area (>= 80° E),Indian Ocean - southeastern antarctic area (>= 80° E)
+IO_EAST,,Indian Ocean - eastern area,Indian Ocean - eastern area
+IO_NORTH,,Indian Ocean - northern area,Indian Ocean - northern area
+IO_NORTHEAST,,Indian Ocean - northeastern area (>= 77° E),Indian Ocean - northeastern area (>= 77° E)
+IO_NORTHWEST,,Indian Ocean - northwestern area (< 77° E),Indian Ocean - northwestern area (< 77° E)
+IO_SOUTH,,Indian Ocean - southern area,Indian Ocean - southern area
+IO_SOUTHEAST,,Indian Ocean - southeastern area (>= 80° E),Indian Ocean - southeastern area (>= 80° E)
+IO_SOUTHWEST,,Indian Ocean - southwestern area (< 80° E),Indian Ocean - southwestern area (< 80° E)
+IO_WEST,,Indian Ocean - western area,Indian Ocean - western area

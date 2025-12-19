@@ -32,6 +32,8 @@
 		"software_type": "wfs",
 		"parameters": {
 			"url": "https://www.fao.org/fishery/geoserver/wfs",
+			"user": "{{GEOSERVER_USER}}",
+			"pwd": "{{GEOSERVER_PASSWORD}}",
 			"serviceVersion": "1.0.0",
 			"logger": "DEBUG"
 		}
@@ -66,7 +68,7 @@
 	"actions": [
 	  {
   	  "id": "process_master",
-  	  "script": "../actions/iotc/process_master.R",
+  	  "script": "../actions/core/process_master.R",
   	  "run":true
 	  },
 	  {
