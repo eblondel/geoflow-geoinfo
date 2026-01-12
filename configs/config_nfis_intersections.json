@@ -67,8 +67,8 @@
 	],
 	"actions": [
 	  {
-  	  "id": "process_intersection_update",
-  	  "script": "../actions/iotc/process_intersection_update.R",
+  	  "id": "process_intersection",
+  	  "script": "../actions/core/process_intersection.R",
   	  "run": true,
   	  "options" : {
   	    "crop1": false,
