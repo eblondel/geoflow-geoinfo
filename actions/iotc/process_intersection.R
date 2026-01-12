@@ -82,7 +82,7 @@ function(action, entity, config){
     layer2_lowres$surface2  <- as.numeric(sf::st_area( sf::st_transform(layer2_lowres,  area_crs) ))
     layer2$surface2 = layer2_lowres$surface2 #recover accurate surface2 in non-cut layer
   }else{
-    layer2$surface1 = as.numeric(sf::st_area( sf::st_transform(layer2,  area_crs) ))
+    layer2$surface2 = as.numeric(sf::st_area( sf::st_transform(layer2,  area_crs) ))
   }
   
   #### 3) INTERSECTIONS MAIN LAYERS x GRID5 (lowres / highres) ####
@@ -107,6 +107,8 @@ function(action, entity, config){
   layer2_lowres_to_intersect = layer2_lowres_to_intersect[!sf::st_is_empty(layer2_lowres_to_intersect),]
 
   #### 4) INTERSECTIONS MAIN LAYERS x GRID5 ####
+  layer1_lowres_to_intersect = sf::st_make_valid(layer1_lowres_to_intersect)
+  layer2_lowres_to_intersect = sf::st_make_valid(layer2_lowres_to_intersect)
   
   # LOWRES intersection: main attrs + CWP_CODE + GRIDTYPE + coverage %
   layer_lowres_int <- sf::st_intersection(layer1_lowres_to_intersect, layer2_lowres_to_intersect)
@@ -133,7 +135,7 @@ function(action, entity, config){
   
   #### 5) AUTO REGISTER (unchanged, with extended labels) ####
   data_files_register = NULL
-  data_files <- list.files("data", pattern = "\\_intersection.gpkg$", full.names = FALSE)
+  data_files <- list.files("data", pattern = entity$data$layername, full.names = FALSE)
   if (length(data_files) > 0) {
     
     register_df <- do.call(rbind, lapply(data_files, function(x) {
@@ -161,7 +163,7 @@ function(action, entity, config){
   ext_data_files <- data_files[basename(data_files) != "register.csv"]
   
   #Keep ONLY intersection layers as geoflow_data children
-  ext_data_files <- ext_data_files[grepl("_intersection\\.gpkg$", basename(ext_data_files))]
+  ext_data_files <- ext_data_files[grepl(entity$data$layername, basename(ext_data_files))]
   
   entity$data$data <- lapply(ext_data_files, function(data_file){
     ext_data <- entity$data$clone(deep = TRUE)
