@@ -205,7 +205,7 @@ function(action, entity, config){
   )
   layer_lowres_int$surface2_percent <- ifelse(
     !is.na(layer_lowres_int$surface2),
-    100 * layer_lowres_int$surface / layer_lowres_int$surface2, 2,
+    100 * layer_lowres_int$surface / layer_lowres_int$surface2,
     NA_real_
   )
   #layer_lowres_int = layer_lowres_int[sf::st_geometry_type(layer_lowres_int) %in% c("POLYGON", "MULTIPOLYGON"),]
