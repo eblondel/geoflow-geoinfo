@@ -31,15 +31,45 @@ function(action, entity, config){
   eez_land <- WFS$getFeatures(entity$data$source[[1]])
   sf::st_crs(eez_land) = 4326
   
+    # Solve France ATF issues
+    eez_land$union[eez_land$mrgid_eez %in% c(8339:8341)]    <- "France ATF Islands / Madagascar"
+    eez_land$pol_type[eez_land$mrgid_eez %in% c(8339:8341)] <- "Overlapping claim"
+    eez_land$iso_sov2[eez_land$mrgid_eez %in% c(8339:8341)] <- "MDG"
+    
+    # Country iso3 codes and label
+    cl_iso3 <- readr::read_csv(
+      "https://raw.githubusercontent.com/fdiwg/fdi-codelists/main/global/cwp/cl_country_and_territory_iso3.csv",
+      show_col_types = FALSE
+    ) %>% 
+      dplyr::select(code, label)  %>%
+      dplyr::rename(label_cl = label)
+    
+    # Conditional replace of label using iso_ter1
+    eez_land <- eez_land %>%
+      dplyr::left_join(
+        cl_iso3,
+        by = c("iso_ter1" = "code")
+      ) %>%
+      dplyr::mutate(
+        union = dplyr::if_else(
+          pol_type == "Union EEZ and country" & !is.na(label_cl),
+          label_cl,
+          union
+        )
+      ) %>%
+      dplyr::select(-label_cl)
+    
+  
   
   # Extract ABNJ from previous entity data WJA_level0.gpkg "../wja_level0/data/wja_level0.gpkg"
   
-  wja_level0 <-sf::st_read("../wja_level0/data/wja_level0.gpkg")
+  wja_level0 <- WFS_FAO$getFeatures("cwp:wja_level0")
+  #wja_level0 <-sf::st_read("../wja_level0/data/wja_level0.gpkg")
   sf::st_crs(wja_level0) = 4326
   wja_level0 <- sf::st_make_valid(wja_level0)
   
   wja_abnj <- wja_level0 |>
-    dplyr::filter(code == "abnj")
+    dplyr::filter(code == "ABNJ")
   
   
   # WJA_level1 
@@ -93,7 +123,7 @@ function(action, entity, config){
           iso_sov1 == iso_ter1 ~ paste(iso_sov1, iso_sov2, sep = "_"),
           
           # iso_sov1 different from iso_ter1 → concatenate
-          TRUE ~ paste(iso_sov1, iso_sov2, iso_ter1, sep = "_")
+          TRUE ~ paste(iso_sov1, iso_ter1, iso_sov2 , sep = "_")
         ),
         
         # default: NA
@@ -142,7 +172,7 @@ function(action, entity, config){
     st_union()
   
   #Choose a projected CRS for the operation
-  crs_proj <- 3857  # or another global projected CRS
+  crs_proj <- 4326  # or another global projected CRS
   
   eez_proj       <- st_transform(eez_land_filtered, crs_proj)
   continent_proj <- st_transform(continent_union,   crs_proj)
@@ -160,7 +190,7 @@ function(action, entity, config){
   #Create wja_nja
   wja_nja_iso3 <- eez %>%
     dplyr::transmute(
-      ID = paste0("wja:",.data$code),
+      ID = paste0("wja:",tolower(.data$code)),
       code = .data$code,
       urn = .data$urn,
       label = .data$union,   # from column "union"
@@ -189,13 +219,18 @@ function(action, entity, config){
   
   wja_nja_iso3 <- wja_nja_iso3 %>%
     dplyr::mutate(type = ifelse(type == "Union EEZ and country",
-                         "Jurisdiction Area",
+                         "JA",
                          type))
   
   wja_nja_iso3 <- wja_nja_iso3 %>%
     dplyr::mutate(type = ifelse(type == "Joint regime (EEZ)",
-                         "Joint regime",
+                         "JR",
                          type))
+  
+  wja_nja_iso3 <- wja_nja_iso3 %>%
+    dplyr::mutate(type = ifelse(type == "Overlapping claim",
+                                "OC",
+                                type))
   
   #create WJA_level1 adding ABNJ
   

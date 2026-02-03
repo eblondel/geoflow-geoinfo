@@ -2,6 +2,7 @@ function(action, entity, config){
   
   #process iotc_stock_assessment_sa_master.gpkg
   layer_master = entity$data$features
+  sf::st_crs(layer_master) = 4326
   
   #Connect to WFS FAO Geoserver
   WFS = ows4R::WFSClient$new(
@@ -12,6 +13,7 @@ function(action, entity, config){
   
   #Low-res continents layer
   continent_lowres = WFS$getFeatures("fifao:UN_CONTINENT2")
+  continent_lowres = sf::st_make_valid(continent_lowres)
   sf::st_crs(continent_lowres) = 4326
   
   #High-res continents layer
