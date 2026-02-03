@@ -90,4 +90,4 @@ if(!is(lyr, "GSLayer")){
 #config$software$wfs$reloadCapabilities()
 
 config$logger$INFO("Successful master data processing")
-config$logger.warn(sprintf("We are here: %s", getwd()))
+config$logger$WARN(sprintf("We are here: %s", getwd()))
