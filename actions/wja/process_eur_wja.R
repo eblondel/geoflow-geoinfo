@@ -1,17 +1,5 @@
 function(action, entity, config){
   
-  # Connect to WFS FAO Geoserver
-  WFS_FAO <- ows4R::WFSClient$new(
-    url = "https://www.fao.org/fishery/geoserver/wfs",
-    serviceVersion = "1.0.0",
-    logger = "INFO"
-  )
-  
-  # Low-res continents layer
-  continent_lowres <- WFS_FAO$getFeatures("fifao:UN_CONTINENT2") #TODO to move to a R fdi data package
-  sf::st_crs(continent_lowres) = 4326
-  continent_lowres <- sf::st_make_valid(continent_lowres)
-  
   # Connect to Server
   #Identify server
   server = NA
@@ -27,42 +15,110 @@ function(action, entity, config){
     logger = "INFO"
   )
   
-  #Get eez_land from WFS
-  eez_land <- WFS$getFeatures(entity$data$source[[1]])
-  sf::st_crs(eez_land) = 4326
+  #Get wja_level1 layer from WFS
+  wja_level1 <- WFS$getFeatures(entity$data$source[[1]])
+  sf::st_crs(wja_level1) = 4326
   
-  # WJA_level0
+  #Create eur_wja
+  eu <- c(
+    "AUT","BEL","BGR","HRV","CYP","CZE","DNK","EST","FIN","FRA",
+    "DEU","GRC","HUN","IRL","ITA","LVA","LTU","LUX","MLT",
+    "NLD","POL","PRT","ROU","SVK","SVN","ESP","SWE"
+  )
   
-  #From VLIZ layer to WJA_NJAs dissolved
-  eez_land_buffer = sf::st_union(sf::st_make_valid(eez_land))
-  #eez_land_buffer_multiparts = sf::st_cast(eez_land_buffer, "POLYGON")
-  wja_nja_land <- smoothr::fill_holes(eez_land_buffer, threshold = units::set_units(10000000000, "m^2"))
-  wja_nja <- st_difference(wja_nja_land, continent_lowres)
-  wja_nja <- st_as_sf(data.frame(
-                          ID = "wja:nja",
-                          code = "NJA",
-                          urn = "urn:fdi:code:cwp:wja:nja",
-                          label = "National Jurisdiction Area",
-                          type = "JA",
-                          geomtry = wja_nja))
+  eu_wja <- vapply(
+    wja_level1[["code"]],
+    FUN = function(code_txt) {
+      # handle NA/empty
+      if (is.na(code_txt) || !nzchar(code_txt)) return(FALSE)
+      
+      parts <- unlist(strsplit(as.character(code_txt), "_", fixed = TRUE), use.names = FALSE)
+      
+      has_eu  <- any(parts %in% eu, na.rm = TRUE)
+    
+      has_eu
+    },
+    FUN.VALUE = logical(1)
+  )
   
-  #Create WJA_ABNJ area
-  pts = matrix(c(-180,-90,-180,90,180,90,180,-90,-180,-90),ncol=2, byrow=TRUE)
-  poly = sf::st_sf(geom = sf::st_sfc(sf::st_polygon(list(pts)), crs = 4326))
-  hs = sf::st_difference(poly, eez_land_buffer)
-  hs = sf::st_cast(hs, "POLYGON")
-  wja_abnj = hs[sf::st_area(hs)>units::as_units(10000000000,"m2"),]
-  wja_abnj = sf::st_union(sf::st_make_valid(wja_abnj))
-  wja_abnj <- st_as_sf(data.frame(
-                          ID = "wja:abnj",
-                          code = "ABNJ",
-                          urn = "urn:fdi:code:cwp:wja:abnj",
-                          label = "Areas Beyond National Jurisdiction (High Seas)",
-                          type = "ABNJ",
-                          geometry = wja_abnj))
+  eu_wja <- wja_level1[eu_wja, ]
   
-  #Combine into wja_level0
-  wja_level0 <- dplyr::bind_rows(wja_nja, wja_abnj)
+  # Filter by pol_type nja
+  eu_wja_nja <- eu_wja |>
+    dplyr::filter(.data$type == "JA")
+  
+  # Dissolve 
+  eu_ja_buffer <- sf::st_union(sf::st_make_valid(eu_wja_nja))
+  eu_ja <- st_as_sf(data.frame(
+    ID = "wja:eur",
+    code = "EUR",
+    urn = "urn:fdi:code:cwp:wja:nja:eur",
+    label = "European Union Jurisdiction Area",
+    type = "JA",
+    geometry = eu_ja_buffer))
+  
+  # Function to replace any EU country iso3 code with EUR:
+  replace_eu_with_eur <- function(x, eu_codes) {
+    # Replace EU ISO3 codes only when they are full tokens delimited by start/end, ':' or '_'
+    pattern <- base::paste0(
+      "(?<=^|[:_])(",
+      base::paste(eu_codes, collapse = "|"),
+      ")(?=[:_]|$)"
+    )
+    
+    base::vapply(
+      x,
+      FUN = function(s) {
+        if (base::is.na(s) || !base::nzchar(s)) return(s)
+        base::gsub(pattern, "EUR", s, perl = TRUE)
+      },
+      FUN.VALUE = character(1)
+    )
+  }
+  
+  #eur_oc Overlapping Claims
+  # Filter by pol_type
+  oc_eu <- eu_wja |>
+    dplyr::filter(.data$type == "OC")
+  
+  oc_eu <- oc_eu |>
+    dplyr::mutate(
+      ID   = replace_eu_with_eur(.data$ID, eu),
+      code = replace_eu_with_eur(.data$code, eu),
+      urn = tolower(
+        replace_eu_with_eur(
+          base::toupper(.data$urn),
+          eu
+        )
+      )
+    )
+  
+  #eur_jr Joint Regimes
+  jr_eu <- eu_wja |>
+    dplyr::filter(.data$type == "JR")
+  
+  jr_eu <- jr_eu |>
+    dplyr::mutate(
+      ID   = replace_eu_with_eur(.data$ID, eu),
+      code = replace_eu_with_eur(.data$code, eu),
+      urn = tolower(
+        replace_eu_with_eur(
+          base::toupper(.data$urn),
+          eu
+        )
+      )
+    )
+  
+  #Combine into eur_wja
+  oc_eu <- oc_eu |>
+    dplyr::rename(geometry = geom) |>    # only if they have geom
+    sf::st_as_sf()
+  
+  jr_eu <- jr_eu |>
+    dplyr::rename(geometry = geom) |>    # only if they have geom
+    sf::st_as_sf()
+  
+  wja_level1_eur <- dplyr::bind_rows(eu_ja, oc_eu, jr_eu)
   
   
   #SAVE GPKG

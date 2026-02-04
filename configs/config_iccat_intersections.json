@@ -70,8 +70,8 @@
   	  "script": "../actions/core/process_intersection.R",
   	  "run": true,
   	  "options" : {
-  	    "crop1": true,
-  	    "crop2": false
+  	    "crop1": false,
+  	    "crop2": true
   	  }
 	  },
 	  {

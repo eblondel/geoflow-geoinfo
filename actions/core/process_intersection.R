@@ -1,8 +1,8 @@
 function(action, entity, config){
   
   #option
-  crop1 = if(!is.null(action$getOption("crop1"))) action$getOption("crop1") else FALSE
-  crop2 = if(!is.null(action$getOption("crop2"))) action$getOption("crop2") else FALSE
+  crop1 = if(!is.null(action$getOption("crop1"))) action$getOption("crop1") else TRUE
+  crop2 = if(!is.null(action$getOption("crop2"))) action$getOption("crop2") else TRUE
   
   #THIS WORKS INSTEAD OF LINES 10-15
   WFS <- config$software$input$wfs
@@ -17,7 +17,7 @@ function(action, entity, config){
   # Low-res continents layer
   continent_lowres <- WFS$getFeatures("fifao:UN_CONTINENT2") #TODO to move to a R fdi data package
   sf::st_crs(continent_lowres) = 4326
-  continent_lowres <- sf::st_make_valid(continent_lowres)
+  #continent_lowres <- sf::st_make_valid(continent_lowres)
   
   #tRFMO code to crop layers into tRFMO area of competence
   #trfmo = NA
@@ -52,7 +52,9 @@ function(action, entity, config){
   )
   
   #layer1
-  layer1 <- WFS1$getFeatures(entity$data$source[[1]])
+  #layer1 <- WFS1$getFeatures(entity$data$source[[1]])
+  layer1 <- WFS1$getFeatures(entity$data$source[[1]], outputFormat = "csv") #get CSV to avoid decimals limit issue
+  layer1 <- sf::st_as_sf(layer1, wkt = "geom") #transform to sf object
   sf::st_crs(layer1) = 4326
   layer1$code1 = layer1[[entity$data$sourceFid[[1]]]]
   #dissolve per code
@@ -66,7 +68,9 @@ function(action, entity, config){
   layer1 <- sf::st_make_valid(layer1)
   
   #layer2
-  layer2 <- WFS2$getFeatures(entity$data$source[[2]])
+  #layer2 <- WFS2$getFeatures(entity$data$source[[2]])
+  layer2 <- WFS2$getFeatures(entity$data$source[[2]], outputFormat = "csv") #get CSV to avoid decimals limit issue
+  layer2 <- sf::st_as_sf(layer2, wkt = "geom") #transform to sf object
   sf::st_crs(layer2) = 4326
   layer2$code2 = layer2[[entity$data$sourceFid[[2]]]]
   #dissolve per code
@@ -103,7 +107,7 @@ function(action, entity, config){
   
   #### 1) PROCESS LAYER1 ####
   layer1_lowres = NULL
-  #if(crop1){
+  if(crop1){
     config$logger$INFO("Croping layer 1 with low-res continent layer")
     layer1_lowres_sfc <- sf::st_sfc(
       lapply(seq_len(nrow(layer1)), function(i){
@@ -116,14 +120,14 @@ function(action, entity, config){
     layer1_lowres    <- sf::st_make_valid(layer1_lowres)
     layer1_lowres$surface1  <- as.numeric(sf::st_area( sf::st_transform(layer1_lowres,  area_crs) ))
     layer1$surface1 = layer1_lowres$surface1 #recover accurate surface1 in non-cut layer
-  #}else{
-  #  layer1$surface1 = as.numeric(sf::st_area( sf::st_transform(layer1,  area_crs) )) #if crop1 = FALSE
-  #}
+  }else{
+    layer1$surface1 = as.numeric(sf::st_area(sf::st_transform(layer1,  area_crs) )) #if crop1 = FALSE
+  }
   
     
   #### 2) PROCESS LAYER2 ####
   layer2_lowres = NULL
-  #if(crop2){
+  if(crop2){
     config$logger$INFO("Croping layer 2 with low-res continent layer")
     layer2_lowres_sfc <- sf::st_sfc(
       lapply(seq_len(nrow(layer2)), function(i){
@@ -136,17 +140,19 @@ function(action, entity, config){
     layer2_lowres    <- sf::st_make_valid(layer2_lowres)
     layer2_lowres$surface2  <- as.numeric(sf::st_area( sf::st_transform(layer2_lowres,  area_crs) ))
     layer2$surface2 = layer2_lowres$surface2 #recover accurate surface2 in non-cut layer
-  #}else{
-  #  layer2$surface2 = as.numeric(sf::st_area( sf::st_transform(layer2,  area_crs) )) #if crop1 = FALSE
-  #}
+  }else{
+    layer2$surface2 = as.numeric(sf::st_area( sf::st_transform(layer2,  area_crs) )) #if crop2 = FALSE
+  }
   
   #### 3) INTERSECTIONS MAIN LAYERS x GRID5 (lowres / highres) ####
   
-  layer1_lowres_to_intersect = if(crop1) layer1_lowres else layer1 
-  layer2_lowres_to_intersect = if(crop2) layer2_lowres else layer2
-  if(crop1 & crop2){
-    layer1_lowres_to_intersect = layer1
-  }
+  #layer1_lowres_to_intersect = if(crop1) layer1_lowres else layer1
+  layer1_lowres_to_intersect = layer1
+  #layer2_lowres_to_intersect = if(crop2) layer2_lowres else layer2
+  layer2_lowres_to_intersect = layer2
+  #if(crop1 & crop2){
+  #  layer1_lowres_to_intersect = layer1
+  #}
   # Keep only needed attributes + IDs
   layer1_lowres_to_intersect  <- layer1_lowres_to_intersect[, c(entity$data$sourceFid[[1]], "surface1")] 
   layer1_lowres_to_intersect$layer1 = entity$data$source[[1]]
@@ -168,7 +174,7 @@ function(action, entity, config){
        
       #SOLVE ISSUE WITH GEOMETRY COLLECTIONS
         
-        layer_lowres_int <- sf::st_make_valid(layer_lowres_int)
+        #layer_lowres_int <- sf::st_make_valid(layer_lowres_int)
         
         # Add stable row id
         layer_lowres_int$..row_id <- seq_len(nrow(layer_lowres_int))
@@ -200,12 +206,16 @@ function(action, entity, config){
   # % of surface
   layer_lowres_int$surface1_percent <- ifelse(
     !is.na(layer_lowres_int$surface1),
-    100 * layer_lowres_int$surface / layer_lowres_int$surface1,
+    round(
+      100 * layer_lowres_int$surface / layer_lowres_int$surface1, 
+      5),
     NA_real_
   )
   layer_lowres_int$surface2_percent <- ifelse(
     !is.na(layer_lowres_int$surface2),
-    100 * layer_lowres_int$surface / layer_lowres_int$surface2,
+    round(
+      100 * layer_lowres_int$surface / layer_lowres_int$surface2,
+      5),
     NA_real_
   )
   #layer_lowres_int = layer_lowres_int[sf::st_geometry_type(layer_lowres_int) %in% c("POLYGON", "MULTIPOLYGON"),]
@@ -228,7 +238,7 @@ function(action, entity, config){
   layer_lowres_int_path    <- file.path("data", paste0(entity$data$layername, ".gpkg"))
   sf::st_write(layer_lowres_int, layer_lowres_int_path, delete_dsn = TRUE)
   
-  #### BOUNDING BOX UPDATE
+  #### BOUNDING BOX UPDATE PENDING
   
   
   #### 5) AUTO REGISTER (unchanged, with extended labels) ####

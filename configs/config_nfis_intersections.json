@@ -3,7 +3,7 @@
 		"id": "vme-workflow",
 		"mode": "entity",
 		"logos": [
-    	"https://iotc.org/sites/all/themes/iotc/images/iotc-logo.png",
+    	"https://www.fao.org/fishery/geoserver/factsheets/assets/common/img/FAOwatermarkSmall.png",
     	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
   	],
 		"environment": {
