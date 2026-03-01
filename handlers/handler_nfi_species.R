@@ -11,9 +11,9 @@ handle_species_entities <- function(handler, source, config){
 	if(!require("sf")){
 		stop("sf package is required")
 	}
-	if(!require("fdi4R")){
-		remotes::install_github("fdiwg/fdi4R")
-		require("fdi4R")
+	if(!require("fdisf")){
+		remotes::install_github("fdiwg/fdisf")
+		require("fdisf")
 	}
 	
 	#software required for handling these entities
@@ -42,8 +42,8 @@ handle_species_entities <- function(handler, source, config){
 		species_sf <- WFS$getFeatures("fifao:SPECIES_DIST", cql_filter = URLencode(sprintf("ALPHACODE='%s'", toupper(a3c))))
 		sf::st_crs(species_sf) = 4326
 		
-		species_bbox = fdi4R::optimize_bbox(species_sf)
-		species_bbox_sf = fdi4R::bbox_to_sf(xmin = species_bbox[1], ymin = species_bbox[2], xmax = species_bbox[3], ymax = species_bbox[4])
+		species_bbox = fdisf::optimize_bbox(species_sf)
+		species_bbox_sf = fdisf::bbox_to_sf(xmin = species_bbox[1], ymin = species_bbox[2], xmax = species_bbox[3], ymax = species_bbox[4])
 		species_center <- sf::st_point_on_surface(species_bbox_sf)
 		bbox_string <- paste0(c(species_bbox[1],species_bbox[3],species_bbox[2],species_bbox[4]),collapse=",")
 		bbox_center <- paste(sf::st_coordinates(species_center), collapse=",")
