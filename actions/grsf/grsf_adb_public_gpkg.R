@@ -36,11 +36,22 @@ st_geometry(all_features_simplified) <- "geom"
 all_features_simplified_publishable <- all_features_simplified %>%
   filter(publishable == "yes")
 
-# For non-publishable: replace geometry with its bounding box
+## For non-publishable: replace geometry with its bounding box
+#bbox_geometries <- all_features_simplified %>%
+#  filter(publishable == "no") %>%
+#  pull(geom) %>%
+#  map(~ st_as_sfc(st_bbox(.x))[[1]])
+
 bbox_geometries <- all_features_simplified %>%
   filter(publishable == "no") %>%
   pull(geom) %>%
-  map(~ st_as_sfc(st_bbox(.x))[[1]])
+  map(function(.x) {
+    # Handle NULL, empty, or NA geometries
+    if (is.null(.x) || st_is_empty(.x) || any(is.na(st_coordinates(.x)))) {
+      return(st_geometrycollection())  
+    }
+    st_as_sfc(st_bbox(.x))[[1]]
+  })
 
 # Ensure sfc object
 bbox_sfc <- st_sfc(bbox_geometries, crs = st_crs(all_features_simplified))
@@ -71,6 +82,7 @@ grsf_areas <- grsf_areas[!st_is_empty(grsf_areas), ]
 # Replace '&' with 'and' in all character columns (excluding geometry)
 grsf_areas[] <- lapply(grsf_areas, function(col) {
   if (is.character(col)) {
+    col <- iconv(col, from = "", to = "UTF-8", sub = "")  #Solve UTF-8 issues
     gsub("&", "and", col, fixed = TRUE)
   } else {
     col
