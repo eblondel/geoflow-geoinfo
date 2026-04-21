@@ -11,9 +11,9 @@ handle_rfb_entities <- function(handler, source, config){
 	if(!require("sf")){
 		stop("sf package is required")
 	}
-	if(!require("fdi4R")){
-		remotes::install_github("fdiwg/fdi4R")
-		require("fdi4R")
+	if(!require("fdisf")){
+		remotes::install_github("fdiwg/fdisf")
+		require("fdisf")
 	}
 	
 	#software required for handling these entities
@@ -45,8 +45,8 @@ handle_rfb_entities <- function(handler, source, config){
 		rfb_sf <- WFS$getFeatures("fifao:RFB_COMP_CLIP", cql_filter = sprintf("RFB='%s'", toupper(rfb_name)))
 		sf::st_crs(rfb_sf) = 4326
 		
-		rfb_bbox = fdi4R::optimize_bbox(rfb_sf)
-		rfb_bbox_sf = fdi4R::bbox_to_sf(xmin = rfb_bbox[1], ymin = rfb_bbox[2], xmax = rfb_bbox[3], ymax = rfb_bbox[4])
+		rfb_bbox = fdisf::optimize_bbox(rfb_sf)
+		rfb_bbox_sf = fdisf::bbox_to_sf(xmin = rfb_bbox[1], ymin = rfb_bbox[2], xmax = rfb_bbox[3], ymax = rfb_bbox[4])
 		rfb_center <- sf::st_point_on_surface(rfb_bbox_sf)
 		bbox_string <- paste0(c(rfb_bbox[1],rfb_bbox[3],rfb_bbox[2],rfb_bbox[4]),collapse=",")
 		bbox_center <- paste(sf::st_coordinates(rfb_center), collapse=",")

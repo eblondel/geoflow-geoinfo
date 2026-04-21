@@ -65,7 +65,7 @@
 		},
 		"properties": {
 			"workspace": "vme",
-			"store": "vme_gpkg_geoflow_test"
+			"store": "vme_closures"
 		}
 	}
 	],

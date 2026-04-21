@@ -227,6 +227,8 @@ data.sf <- WFS$getFeatures("fifao:FAO_AREAS_MASTER")
 sf::st_crs(data.sf) = 4326
 if(!is.null(data.sf)) config$logger$INFO("Successful fetching of master file through WFS")
 
+data.sf = data.sf |> sf::st_make_valid()
+
 # data <- as(data.sf, "Spatial")
 # 
 # #crop at North pole (-89.99 instead of -90) to avoid reprojection issues when exploiting the data
@@ -402,8 +404,8 @@ download.file("https://www.fao.org/fishery/geoserver/fifao/ows?service=WFS&reque
 zip::unzip("FAO_AREAS_INLAND.zip")
 fao_areas_inland = sf::st_read("FAO_AREAS_INLAND.shp")
 unlink(list.files(pattern = "FAO_AREAS_INLAND"))
-fao_areas_inland$ID = paste0("fao:",fao_areas_inland$F_AREA_INL)
-fao_areas_inland$F_CODE = fao_areas_inland$F_AREA_INL
+fao_areas_inland$ID = tolower(paste0("fao:",fao_areas_inland$F_CODE))
+fao_areas_inland$F_CODE = fao_areas_inland$F_CODE
 fao_areas_inland$F_AREA_INL = NULL
 fao_areas_inland$F_LEVEL = "MAJOR"
 fao_areas_inland$F_STATUS = "endorsed"
