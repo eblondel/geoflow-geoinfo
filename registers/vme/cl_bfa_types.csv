@@ -1,0 +1,11 @@
+code,uri,label,definition
+BTM_FISH,,Existing bottom fishing areas,
+BTM_FISH_LL,,Existing bottom fishing areas (set longlines),
+BTM_FISH_FP,,Existing bottom fishing (footprint) areas,
+BTM_FISH_SEAM,,Seamount fishing areas,
+BTM_FISH_TRAWL_MID,,Fishing footprint - Mid-water trawl,
+BTM_FISH_LINE_BOT,,Fishing footprint - Bottom line,
+BTM_FISH_TRAWL_BOT,,Fishing footprint - Bottom trawl,
+TOP_FISH_EXPL,,Exploratory toothfish fisheries,
+GER_FISH_EXPL,,Exploratory crab fisheries,
+TTH_FISH_EXPL,,Exploratory toothfish fisheries,

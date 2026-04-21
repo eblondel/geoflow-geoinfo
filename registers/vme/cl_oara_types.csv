@@ -1,0 +1,8 @@
+code,uri,label,definition
+BTM_UNFISHED,,Unfished bottom areas,
+AREA_DEEP,,Deepwater Fisheries Restriction,
+FISH_HAB,,Essential Fish Habitats,
+BTM_FISH_NEW,,New bottom fishing areas,
+AREA_ASSESS,,Areas requiring assessment,
+AREA_MANAGEMENT,,Management areas,
+BTM_FISH_OUT_FP,,Bottom fishing outside the footprint,

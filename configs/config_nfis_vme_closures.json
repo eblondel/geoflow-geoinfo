@@ -8,7 +8,7 @@
     	"https://mirrors.creativecommons.org/presskit/buttons/88x31/png/by.png"
   	],
 		"environment": {
-			"file": "/envs/geoinfo.env",
+			"file": "envs/geoinfo.env",
 			"hide_env_vars": ["USER", "PASSWORD", "TOKEN"]
 		},
 		"options": {
@@ -19,12 +19,16 @@
 	"metadata": {
 	  "entities": [{
   		"handler": "gsheet",
-  		"source": "https://docs.google.com/spreadsheets/d/10B8C3uN6P5W4qccL-wn4IuwXQtLIFkxZraLlqHeLLtA/edit?usp=sharing"
+  		"source": "https://docs.google.com/spreadsheets/d/1JYrUz4vG7twOCSc8bW35NXxyUoDplRg03JYiKz0kxrw/edit?gid=1962881097#gid=1962881097"
 	  }],
 	  "contacts" : [{
         "handler": "gsheet",
-        "source": "https://docs.google.com/spreadsheets/d/1nxl4n0v91PmlqAn2Z1ztRkGHmKzPbZmDu2ArpPQUknA/edit?gid=1863177437"
-      }]
+        "source": "https://docs.google.com/spreadsheets/d/1JYrUz4vG7twOCSc8bW35NXxyUoDplRg03JYiKz0kxrw/edit?gid=1005396552#gid=1005396552"
+      }],
+	    "dictionary": [{
+	      "handler": "gsheet",
+	      "source": "https://docs.google.com/spreadsheets/d/1JYrUz4vG7twOCSc8bW35NXxyUoDplRg03JYiKz0kxrw/edit?gid=227860508#gid=227860508"
+	    }]
 	},
 	"software": [
 	{
@@ -66,6 +70,13 @@
 	}
 	],
 	"actions": [
+	  {
+    "id": "geometa-create-iso-19110",
+    "run": true,
+    "options": {
+		  "exclude_values_for_attributes" : ["VME_ID","LOCAL_NAME","YEAR","END_YEAR","VME_AREA_TIME","REG_NAME","SURFACE"]
+	   }
+    },
 	  {
       "id": "geometa-create-iso-19115",
       "run": true,

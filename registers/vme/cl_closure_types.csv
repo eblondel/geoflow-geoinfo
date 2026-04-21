@@ -1,0 +1,12 @@
+code,uri,label,definition
+CLOS_AREA,,Closed area (SEAFO),
+AREA_RESTRICTED,,Fisheries restricted area (GFCM),
+CLOS_VME,,VME Closed Areas,
+CLOS_IPA_SIOFA,,Interim protected area (SIOFA),
+CLOS_SEAM_NPFC,,Seamount closure (NPFC),
+CLOS_SEAM_NAFO,,Seamount closure (NAFO),
+CLOS_CORAL,,Coral closure (NAFO),
+VME_CLOS_NAFO,,Vulnerable marine ecosystem area closure (NAFO),
+AREA_SPOCOR,,Area of higher sponge and coral concentration (NAFO),
+AREA_RISK,,Risk area (CCAMLR),
+VME,,Registered VME (CCAMLR),
